@@ -1,9 +1,13 @@
-// Boots the Three.js scene, connects lifecycle state to the opening screen, and renders the P1 playable preview.
+// Boots the Three.js scene, connects its state to the procedural track, and renders the playable preview.
 import * as THREE from 'three';
 import { PALETTE } from './art/Palette.js';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
 import { FixedStepLoop } from './core/Loop.js';
+import { CameraRig } from './entities/CameraRig.js';
+import { Runner } from './entities/Runner.js';
+import { TrackGraph } from './world/TrackGraph.js';
+import { TrackMesh } from './world/TrackMesh.js';
 
 const canvas = document.querySelector('#game-canvas');
 const errorPanel = document.querySelector('#error-panel');
@@ -48,45 +52,23 @@ try {
   fillLight.position.fromArray(CONFIG.scene.fillLightPosition);
   scene.add(fillLight);
 
-  const roadMaterial = new THREE.MeshStandardMaterial({ color: PALETTE.plaster, roughness: 0.85 });
-  const road = new THREE.Mesh(
-    new THREE.BoxGeometry(CONFIG.track.roadWidth, CONFIG.track.roadThickness, CONFIG.track.staticRoadLength),
-    roadMaterial,
-  );
-  road.position.set(0, -CONFIG.track.roadThickness / 2, CONFIG.scene.roadStart);
-  road.receiveShadow = true;
-  road.matrixAutoUpdate = false;
-  road.updateMatrix();
-  scene.add(road);
+  const track = new TrackGraph({ Vector3: THREE.Vector3, config: CONFIG });
+  track.ensureAhead(0, CONFIG.track.keepAhead);
+  const trackMesh = new TrackMesh({ THREE, track, config: CONFIG, palette: PALETTE });
+  scene.add(trackMesh.root);
 
-  const markMaterial = new THREE.MeshStandardMaterial({ color: PALETTE.bronze, roughness: 0.8 });
-  const markGeometry = new THREE.BoxGeometry(
-    CONFIG.track.laneMarkWidth,
-    CONFIG.track.laneMarkHeight,
-    CONFIG.track.laneMarkLength,
-  );
-  for (let index = 0; index < CONFIG.track.laneMarkCount; index += 1) {
-    const markZ = index * CONFIG.track.laneMarkSpacing;
-    for (const laneBoundary of CONFIG.laneOffsets.slice(1)) {
-      const mark = new THREE.Mesh(markGeometry, markMaterial);
-      mark.position.set(laneBoundary - CONFIG.laneOffsets[1], 0, markZ);
-      mark.matrixAutoUpdate = false;
-      mark.updateMatrix();
-      scene.add(mark);
-    }
-  }
-
-  const runner = new THREE.Mesh(
-    new THREE.BoxGeometry(CONFIG.runner.bodyWidth, CONFIG.runner.bodyHeight, CONFIG.runner.bodyDepth),
-    new THREE.MeshStandardMaterial({ color: PALETTE.ochreRed, roughness: 0.65 }),
-  );
-  runner.position.set(0, CONFIG.scene.runnerBaseHeight, 0);
-  runner.castShadow = true;
-  scene.add(runner);
+  const runner = new Runner({
+    THREE,
+    Vector3: THREE.Vector3,
+    track,
+    config: CONFIG,
+    palette: PALETTE,
+  });
+  scene.add(runner.root);
+  const cameraRig = new CameraRig({ camera, Vector3: THREE.Vector3, track, config: CONFIG });
+  cameraRig.snapTo(runner);
 
   const gameState = new GameState();
-  let elapsed = 0;
-
   function resize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -96,16 +78,21 @@ try {
   }
 
   function update(dt) {
-    elapsed += dt;
     if (gameState.current === GAME_STATES.PLAYING) {
-      runner.position.z += CONFIG.runner.baseSpeed * dt;
+      runner.update(dt);
     } else {
-      runner.position.y = CONFIG.scene.runnerBaseHeight
-        + Math.sin(elapsed * CONFIG.runner.previewSpeed) * CONFIG.runner.previewBobHeight;
+      runner.updatePreview(dt);
     }
-
-    camera.position.set(0, CONFIG.camera.offsetUp, runner.position.z - CONFIG.camera.offsetBack);
-    camera.lookAt(0, CONFIG.camera.lookHeight, runner.position.z + CONFIG.camera.lookAhead);
+    track.ensureAhead(runner.s, CONFIG.track.keepAhead);
+    trackMesh.updateFromTrack();
+    cameraRig.update(runner, dt);
+    keyLight.target.position.copy(runner.root.position);
+    keyLight.position.set(
+      runner.root.position.x + CONFIG.scene.keyLightPosition[0],
+      runner.root.position.y + CONFIG.scene.keyLightPosition[1],
+      runner.root.position.z + CONFIG.scene.keyLightPosition[2],
+    );
+    keyLight.target.updateMatrixWorld();
   }
 
   function render() {
@@ -126,7 +113,7 @@ try {
       return;
     }
     screenLayer.hidden = false;
-    loop.paused = true;
+    loop.paused = next === GAME_STATES.PAUSED;
   });
 
   startButton.addEventListener('click', () => {
