@@ -1,7 +1,10 @@
 // Boots the Three.js scene, connects its state to the procedural track, and renders the playable preview.
 import * as THREE from 'three';
 import { PALETTE } from './art/Palette.js';
+import { createTextureSet } from './art/Textures.js';
+import { FxSystem } from './art/Fx.js';
 import { createObstacleVisual } from './art/Props.js';
+import { Sfx } from './audio/Sfx.js';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
 import { Input } from './core/Input.js';
@@ -45,6 +48,7 @@ try {
   renderer.shadowMap.enabled = true;
 
   const scene = new THREE.Scene();
+  const textures = createTextureSet(THREE, document, PALETTE);
   scene.background = new THREE.Color(PALETTE.nightTeal);
   scene.fog = new THREE.Fog(PALETTE.nightTeal, CONFIG.scene.fogNear, CONFIG.scene.fogFar);
 
@@ -64,7 +68,14 @@ try {
   const track = new TrackGraph({ Vector3: THREE.Vector3, config: CONFIG });
   track.ensureAhead(0, CONFIG.track.keepAhead);
   const trackMesh = new TrackMesh({ THREE, track, config: CONFIG, palette: PALETTE });
+  trackMesh.material.map = textures.stone;
+  trackMesh.material.needsUpdate = true;
   scene.add(trackMesh.root);
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(CONFIG.art.skyRadius, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
+    new THREE.MeshBasicMaterial({ map: textures.sky, side: THREE.BackSide }),
+  );
+  scene.add(sky);
 
   const runner = new Runner({
     THREE,
@@ -79,6 +90,8 @@ try {
 
   const gameState = new GameState();
   const score = new Score({ config: CONFIG });
+  const sfx = new Sfx({ config: CONFIG });
+  const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: PALETTE });
   const powerUp = new PowerUp({ config: CONFIG });
   const pursuer = new Pursuer({ config: CONFIG });
   const obstacleSpawner = new ObstacleSpawner({
@@ -90,6 +103,8 @@ try {
   const collision = new CollisionSystem({
     config: CONFIG,
     onHit: () => {
+      fx.emit(runner.root.position);
+      sfx.play('hit');
       if (!powerUp.consumeShield()) {
         pursuer.registerHit(runner);
       }
@@ -101,8 +116,8 @@ try {
   const hud = new Hud({ root: document.querySelector('#hud') });
   const screens = new Screens({
     layer: screenLayer,
-    onStart: () => gameState.transition(GAME_STATES.PLAYING),
-    onResume: () => gameState.transition(GAME_STATES.PLAYING),
+    onStart: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
+    onResume: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
     onRestart: () => {
       runner.reset();
       score.reset();
@@ -168,10 +183,15 @@ try {
       collision.update(runner, obstacleSpawner);
       pursuer.update(runner, dt);
       pickupSpawner.ensureAhead(runner.s, CONFIG.track.keepAhead);
-      pickupSpawner.collectCoins(runner, () => score.addCoin());
+      pickupSpawner.collectCoins(runner, () => {
+        score.addCoin();
+        fx.emit(runner.root.position);
+        sfx.play('coin');
+      });
       score.updateDistance(runner.s);
       powerUp.update(dt);
     }
+    fx.update(dt);
     hud.update({
       distance: score.distance,
       coins: score.coins,
@@ -218,6 +238,13 @@ try {
   });
 
   window.addEventListener('resize', resize);
+  document.querySelector('#pause-button').addEventListener('click', () => {
+    if (gameState.current === GAME_STATES.PLAYING) gameState.transition(GAME_STATES.PAUSED);
+    else if (gameState.current === GAME_STATES.PAUSED) gameState.transition(GAME_STATES.PLAYING);
+  });
+  document.querySelector('#mute-button').addEventListener('click', (event) => {
+    event.currentTarget.textContent = sfx.toggleMute() ? '♫̸' : '♫';
+  });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && gameState.current === GAME_STATES.PLAYING) {
       gameState.transition(GAME_STATES.PAUSED);

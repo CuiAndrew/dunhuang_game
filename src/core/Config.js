@@ -166,4 +166,19 @@ export const CONFIG = Object.freeze({
   render: {
     maxPixelRatio: 2,
   },
+  art: {
+    textureSize: 256,
+    skyRadius: 500,
+    skyWidthSegments: 32,
+    skyHeightSegments: 16,
+  },
+  fx: {
+    particleCount: 96,
+    particleLife: 0.4,
+  },
+  audio: {
+    coinFrequency: 880,
+    coinEndFrequency: 1320,
+    masterVolume: 0.08,
+  },
 });
