@@ -9,10 +9,13 @@ export class Sfx {
 
   async resume() {
     if (!this.context) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const host = typeof window === 'undefined' ? globalThis : window;
+      const AudioContextClass = host.AudioContext || host.webkitAudioContext;
+      if (!AudioContextClass) return false;
       this.context = new AudioContextClass();
     }
     await this.context.resume();
+    return true;
   }
 
   toggleMute() {

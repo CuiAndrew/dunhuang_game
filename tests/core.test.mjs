@@ -72,7 +72,7 @@ test('index bootstraps Three r169 and exposes accessible application containers'
   assert.equal(existsSync(indexPath), true, 'index.html must exist');
 
   const html = readFileSync(indexPath, 'utf8');
-  assert.match(html, /three@0\.169\.0\/build\/three\.module\.js/);
+  assert.match(html, /node_modules\/three\/build\/three\.module\.js/);
   assert.match(html, /<main id="game-shell"/);
   assert.match(html, /id="game-canvas"/);
   assert.match(html, /id="hud"/);

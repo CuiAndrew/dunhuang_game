@@ -23,6 +23,7 @@ import { TrackGraph } from './world/TrackGraph.js';
 import { TrackMesh } from './world/TrackMesh.js';
 
 const canvas = document.querySelector('#game-canvas');
+const gameShell = document.querySelector('#game-shell');
 const errorPanel = document.querySelector('#error-panel');
 const errorMessage = document.querySelector('#error-message');
 const screenLayer = document.querySelector('#screen-layer');
@@ -221,6 +222,7 @@ try {
   });
 
   gameState.subscribe((next) => {
+    gameShell.dataset.gameState = next;
     if (next === GAME_STATES.PLAYING) {
       screens.hide();
       loop.paused = false;

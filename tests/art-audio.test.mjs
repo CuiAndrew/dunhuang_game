@@ -9,3 +9,9 @@ test('art and audio modules expose procedural-only factories', async () => {
   assert.equal(typeof fx.FxSystem, 'function');
   assert.equal(typeof sfx.Sfx, 'function');
 });
+
+test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const sfx = new Sfx({ config: { audio: {} }, storage: { getItem: () => null, setItem: () => {} } });
+  assert.equal(await sfx.resume(), false);
+});
