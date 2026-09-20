@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1A2A33" />
+    <title>敦煌逃亡</title>
+    <style>
+      :root {
+        --ochre-red: #A63B29;
+        --cinnabar: #C8402F;
+        --stone-blue: #2E5C8A;
+        --dunhuang-gold: #E8B23A;
+        --bronze: #6B5A3E;
+        --sand: #E3C68B;
+        --plaster: #F0E2C8;
+        --ink: #2B1F1A;
+        --night-teal: #1A2A33;
+        --ui-font: "Songti SC", "STSong", "Noto Serif SC", serif;
+        --utility-font: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        --safe-top: max(1rem, env(safe-area-inset-top));
+        --safe-right: max(1rem, env(safe-area-inset-right));
+        --safe-bottom: max(1rem, env(safe-area-inset-bottom));
+        --safe-left: max(1rem, env(safe-area-inset-left));
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body, #game-shell {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        overflow: hidden;
+        background: var(--night-teal);
+        color: var(--plaster);
+        font-family: var(--ui-font);
+      }
+
+      button {
+        font: inherit;
+      }
+
+      button:focus-visible {
+        outline: 3px solid var(--dunhuang-gold);
+        outline-offset: 3px;
+      }
+
+      #game-shell {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      #game-canvas, #hud, #screen-layer, #error-panel {
+        position: absolute;
+        inset: 0;
+      }
+
+      #game-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+      }
+
+      #hud { pointer-events: none; }
+
+      #screen-layer {
+        display: grid;
+        place-items: center;
+        padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+        background: radial-gradient(circle at center, transparent 0%, rgb(26 42 51 / 32%) 72%, rgb(43 31 26 / 82%) 100%);
+      }
+
+      #screen-layer[hidden] { display: none; }
+
+      .title-panel {
+        width: min(100%, 32rem);
+        padding: clamp(1.25rem, 4vw, 2.5rem);
+        text-align: center;
+        border: 1px solid rgb(227 198 139 / 58%);
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, rgb(43 31 26 / 90%), rgb(26 42 51 / 84%));
+        box-shadow: inset 0 0 0 1px rgb(232 178 58 / 13%);
+      }
+
+      .eyebrow {
+        margin: 0 0 0.75rem;
+        color: var(--dunhuang-gold);
+        font: 0.75rem/1.25 var(--utility-font);
+        letter-spacing: 0.18em;
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--plaster);
+        font-size: clamp(2.5rem, 12vw, 5.5rem);
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: 0.08em;
+      }
+
+      .instruction {
+        max-width: 24rem;
+        margin: 1.25rem auto;
+        color: rgb(240 226 200 / 87%);
+        line-height: 1.7;
+      }
+
+      #start-button {
+        min-width: 12rem;
+        min-height: 3.25rem;
+        border: 1px solid var(--dunhuang-gold);
+        border-radius: 0.25rem;
+        color: var(--plaster);
+        background: var(--cinnabar);
+        cursor: pointer;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        transition: background-color 120ms ease, transform 120ms ease;
+      }
+
+      #start-button:hover { background: var(--ochre-red); }
+      #start-button:active { transform: translateY(1px); }
+
+      #error-panel {
+        z-index: 4;
+        display: grid;
+        place-items: center;
+        padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+        color: var(--plaster);
+        background: rgb(43 31 26 / 92%);
+      }
+
+      #error-panel[hidden] { display: none; }
+
+      .error-card {
+        width: min(100%, 36rem);
+        padding: clamp(1.25rem, 4vw, 2.5rem);
+        border: 1px solid var(--cinnabar);
+        border-radius: 0.75rem;
+        background: var(--night-teal);
+      }
+
+      #error-message {
+        overflow-wrap: anywhere;
+        color: var(--sand);
+        font-family: var(--utility-font);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main id="game-shell" aria-label="敦煌逃亡游戏">
+      <canvas id="game-canvas" aria-label="敦煌逃亡 3D 游戏画面"></canvas>
+      <div id="hud" aria-live="polite" aria-atomic="true"></div>
+      <section id="screen-layer" aria-label="游戏开始界面">
+        <div class="title-panel">
+          <p class="eyebrow">壁画行者 · 沙海逃亡</p>
+          <h1>敦煌逃亡</h1>
+          <p class="instruction">自动前行，左右换道，跃过断壁，避开身后的苏醒石兽。</p>
+          <button id="start-button" type="button">开始逃亡</button>
+        </div>
+      </section>
+      <section id="error-panel" role="alert" aria-live="assertive" hidden>
+        <div class="error-card">
+          <p class="eyebrow">运行出现问题</p>
+          <p id="error-message">未知错误</p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
