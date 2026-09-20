@@ -9,6 +9,8 @@ test('art and audio modules expose procedural-only factories', async () => {
   assert.equal(typeof textures.createTextureSet, 'function');
   assert.equal(typeof fx.FxSystem, 'function');
   assert.equal(typeof sfx.Sfx, 'function');
+  assert.equal(typeof sfx.Sfx.prototype.startAmbient, 'function');
+  assert.equal(typeof sfx.Sfx.prototype.stopAmbient, 'function');
   assert.equal(typeof props.createPursuerVisual, 'function');
   assert.equal(typeof props.createPickupVisual, 'function');
 });

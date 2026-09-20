@@ -4,6 +4,8 @@ export class Sfx {
     this.config = config;
     this.storage = storage;
     this.context = null;
+    this.ambientTimer = null;
+    this.ambientStep = 0;
     this.muted = storage?.getItem('dunhuang-run-muted') === 'true';
   }
 
@@ -16,6 +18,7 @@ export class Sfx {
         this.context = new AudioContextClass();
       }
       await this.context.resume();
+      this.startAmbient();
       return true;
     } catch {
       this.context = null;
@@ -30,7 +33,33 @@ export class Sfx {
     } catch {
       // Storage can be unavailable in private browsing; audio still works in-memory.
     }
+    if (this.muted) this.stopAmbient();
+    else this.startAmbient();
     return this.muted;
+  }
+
+  startAmbient() {
+    if (this.muted || !this.context || this.ambientTimer) return;
+    const scale = [220, 262, 294, 330, 392];
+    this.ambientTimer = setInterval(() => {
+      if (this.muted || !this.context) return;
+      const oscillator = this.context.createOscillator();
+      const gain = this.context.createGain();
+      const now = this.context.currentTime;
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(scale[this.ambientStep % scale.length], now);
+      gain.gain.setValueAtTime(this.config.audio.masterVolume * 0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
+      oscillator.connect(gain).connect(this.context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + 0.8);
+      this.ambientStep += 1;
+    }, 900);
+  }
+
+  stopAmbient() {
+    if (this.ambientTimer) clearInterval(this.ambientTimer);
+    this.ambientTimer = null;
   }
 
   play(name) {
