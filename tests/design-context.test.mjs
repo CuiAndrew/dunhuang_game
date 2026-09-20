@@ -25,3 +25,12 @@ test('design context defines the Dunhuang game identity and runtime token mappin
   assert.match(design, /铜钱印章/);
   assert.match(design, /reduced-motion/);
 });
+
+test('feasibility research and delivery plan are checked in', () => {
+  const planPath = new URL('../docs/敦煌逃亡_可行性研究与技术计划.md', import.meta.url);
+  assert.equal(existsSync(planPath), true);
+  const plan = readFileSync(planPath, 'utf8');
+  assert.match(plan, /技术可行性/);
+  assert.match(plan, /交付路线/);
+  assert.match(plan, /npm test/);
+});
