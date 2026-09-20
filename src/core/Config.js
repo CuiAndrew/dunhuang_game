@@ -4,6 +4,7 @@ export const CONFIG = Object.freeze({
   loop: {
     fixedDt: 1 / 60,
     maxFrameDelta: 0.1,
+    millisecondsPerSecond: 1000,
   },
   track: {
     roadWidth: 9,
@@ -19,6 +20,33 @@ export const CONFIG = Object.freeze({
     laneMarkHeight: 0.02,
     laneMarkSpacing: 4,
     laneMarkCount: 40,
+    samplePoolSize: 2048,
+    segmentPoolSize: 512,
+    straightSampleStep: 1,
+    turnSampleStep: 0.75,
+    slopeAmount: 0.12,
+    earlyDistanceEnd: 300,
+    mediumDistanceEnd: 800,
+    earlyWeights: [
+      ['STRAIGHT', 0.85],
+      ['SLOPE_UP', 0.08],
+      ['SLOPE_DOWN', 0.07],
+    ],
+    mediumWeights: [
+      ['STRAIGHT', 0.65],
+      ['TURN_L', 0.1],
+      ['TURN_R', 0.1],
+      ['SLOPE_UP', 0.075],
+      ['SLOPE_DOWN', 0.075],
+    ],
+    lateWeights: [
+      ['STRAIGHT', 0.5],
+      ['TURN_L', 0.15],
+      ['TURN_R', 0.15],
+      ['SLOPE_UP', 0.06],
+      ['SLOPE_DOWN', 0.06],
+      ['GAP', 0.08],
+    ],
   },
   runner: {
     baseSpeed: 12.5,
