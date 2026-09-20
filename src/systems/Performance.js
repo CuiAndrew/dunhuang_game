@@ -2,6 +2,7 @@
 export class PerformanceBudget {
   constructor({ config }) {
     this.config = config;
+    this.qualityPixelRatios = config.render.qualityPixelRatios ?? [config.render.maxPixelRatio, 1];
     this.level = 0;
     this.lowFrameSeconds = 0;
   }
@@ -14,7 +15,7 @@ export class PerformanceBudget {
     } else {
       this.lowFrameSeconds = Math.max(0, this.lowFrameSeconds - frameDelta * 0.5);
     }
-    if (this.lowFrameSeconds < this.config.render.lowFpsDuration || this.level >= this.config.render.qualityPixelRatios.length - 1) {
+    if (this.lowFrameSeconds < this.config.render.lowFpsDuration || this.level >= this.qualityPixelRatios.length - 1) {
       return false;
     }
     this.level += 1;
@@ -23,7 +24,7 @@ export class PerformanceBudget {
   }
 
   get pixelRatioCap() {
-    return this.config.render.qualityPixelRatios[this.level];
+    return this.qualityPixelRatios[this.level];
   }
 
   get shadowsEnabled() {

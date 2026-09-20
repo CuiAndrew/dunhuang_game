@@ -12,3 +12,10 @@ test('PerformanceBudget degrades only after sustained low frame rate', () => {
   assert.equal(budget.pixelRatioCap, 1.5);
   assert.equal(budget.shadowsEnabled, false);
 });
+
+test('PerformanceBudget tolerates older render configs without quality steps', () => {
+  const budget = new PerformanceBudget({ config: { render: { maxPixelRatio: 2, lowFpsThreshold: 45, lowFpsDuration: 1 } } });
+  assert.equal(budget.pixelRatioCap, 2);
+  assert.equal(budget.update(1.1), true);
+  assert.equal(budget.pixelRatioCap, 1);
+});
