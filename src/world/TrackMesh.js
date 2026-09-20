@@ -27,6 +27,23 @@ export class TrackMesh {
     this.mesh.frustumCulled = false;
     this.root = new THREE.Group();
     this.root.add(this.mesh);
+    this.laneMarks = [];
+    this.rails = [];
+    const markMaterial = new THREE.MeshBasicMaterial({ color: palette.dunhuangGold, transparent: true, opacity: 0.72 });
+    const railMaterial = new THREE.MeshStandardMaterial({ color: palette.bronze, roughness: 0.85 });
+    for (let index = 0; index < config.track.laneMarkCount * 2; index += 1) {
+      const mark = new THREE.Mesh(new THREE.BoxGeometry(config.track.laneMarkWidth, config.track.laneMarkHeight, config.track.laneMarkLength), markMaterial);
+      mark.visible = false;
+      this.laneMarks.push(mark);
+      this.root.add(mark);
+    }
+    for (let index = 0; index < 2; index += 1) {
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.22, 4), railMaterial);
+      rail.visible = false;
+      this.rails.push(rail);
+      this.root.add(rail);
+    }
+    this.decorationFrame = { position: new THREE.Vector3(), forward: new THREE.Vector3(), right: new THREE.Vector3() };
     this.lastRevision = -1;
     this.updateFromTrack();
   }
@@ -69,6 +86,44 @@ export class TrackMesh {
     this.normalAttribute.needsUpdate = true;
     this.indexAttribute.needsUpdate = true;
     this.geometry.setDrawRange(0, indexCount);
+    this._updateDecorations();
     this.lastRevision = this.track.revision;
+  }
+
+  _updateDecorations() {
+    const firstS = this.track.firstSampleS();
+    const lastS = this.track.trackLength();
+    const spacing = this.config.track.laneMarkSpacing;
+    for (let index = 0; index < this.laneMarks.length; index += 1) {
+      const lane = index % 2 === 0 ? -1 : 1;
+      const s = firstS + Math.floor(index / 2) * spacing;
+      const mark = this.laneMarks[index];
+      if (s > lastS) {
+        mark.visible = false;
+        continue;
+      }
+      this.track.evalTrack(s, this.decorationFrame);
+      mark.visible = true;
+      mark.position.set(
+        this.decorationFrame.position.x + this.decorationFrame.right.x * lane * (this.config.track.roadWidth / 6),
+        this.decorationFrame.position.y + this.config.track.laneMarkHeight,
+        this.decorationFrame.position.z + this.decorationFrame.right.z * lane * (this.config.track.roadWidth / 6),
+      );
+      mark.rotation.y = Math.atan2(-this.decorationFrame.forward.x, this.decorationFrame.forward.z);
+    }
+    for (let index = 0; index < this.rails.length; index += 1) {
+      const s = Math.min(lastS, firstS + 10 + index * 6);
+      this.track.evalTrack(s, this.decorationFrame);
+      const side = index === 0 ? -1 : 1;
+      const offset = this.config.track.roadWidth / 2 + 0.25;
+      const rail = this.rails[index];
+      rail.visible = lastS > firstS + 4;
+      rail.position.set(
+        this.decorationFrame.position.x + this.decorationFrame.right.x * side * offset,
+        this.decorationFrame.position.y + 0.18,
+        this.decorationFrame.position.z + this.decorationFrame.right.z * side * offset,
+      );
+      rail.rotation.y = Math.atan2(-this.decorationFrame.forward.x, this.decorationFrame.forward.z);
+    }
   }
 }
