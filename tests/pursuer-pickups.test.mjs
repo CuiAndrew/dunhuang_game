@@ -40,6 +40,31 @@ test('PickupSpawner keeps coin strings spaced and creates rare power-ups in the 
   assert.ok(spawner.getPowerUpSnapshots().every((item) => item.s >= CONFIG.spawn.powerUpGapMin));
 });
 
+test('PickupSpawner keeps active pickups bounded by fixed pools and reuses released slots', async () => {
+  const module = await loadModule('../src/world/PickupSpawner.js');
+  const spawner = new module.PickupSpawner({ config: CONFIG, random: () => 0.2 });
+  spawner.ensureAhead(0, 20000);
+  const firstStats = spawner.poolStats();
+  assert.equal(firstStats.activeCoins <= CONFIG.spawn.coinPoolSize, true);
+  assert.equal(firstStats.activePowerUps <= CONFIG.spawn.powerUpPoolSize, true);
+  assert.equal(firstStats.activeCoins + firstStats.freeCoins, CONFIG.spawn.coinPoolSize);
+  assert.equal(firstStats.activePowerUps + firstStats.freePowerUps, CONFIG.spawn.powerUpPoolSize);
+  spawner.recycleBefore(15000);
+  const recycledStats = spawner.poolStats();
+  assert.equal(recycledStats.freeCoins > firstStats.freeCoins, true);
+  assert.equal(recycledStats.freePowerUps > firstStats.freePowerUps, true);
+  spawner.ensureAhead(15000, 3000);
+  assert.equal(spawner.poolStats().activeCoins <= CONFIG.spawn.coinPoolSize, true);
+});
+
+test('PickupSpawner occasionally lays coins across an arc of lanes', async () => {
+  const module = await loadModule('../src/world/PickupSpawner.js');
+  const spawner = new module.PickupSpawner({ config: CONFIG, random: () => 0.1 });
+  spawner.ensureAhead(0, 30);
+  const lanes = new Set(spawner.getCoinSnapshots().slice(0, 5).map((coin) => coin.lane));
+  assert.equal(lanes.size >= 3, true);
+});
+
 test('PowerUp tracks independent timers, one-shot shield and non-stacking boost reset', async () => {
   const module = await loadModule('../src/systems/PowerUp.js');
   assert.ok(module, 'PowerUp module must exist');

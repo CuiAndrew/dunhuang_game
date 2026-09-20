@@ -200,6 +200,7 @@ try {
       pursuer.visual.rotation.y = Math.atan2(-pickupFrame.forward.x, pickupFrame.forward.z);
       pursuer.visual.visible = !pursuer.dead;
       pickupSpawner.ensureAhead(runner.s, CONFIG.track.keepAhead);
+      pickupSpawner.recycleBefore(runner.s - CONFIG.track.recycleBehind);
       pickupSpawner.forEachActive((pickup) => {
         if (!pickup.visual) return;
         if (!pickup.visual.parent) scene.add(pickup.visual);
