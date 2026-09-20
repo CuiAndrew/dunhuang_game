@@ -180,6 +180,8 @@ try {
 
   function update(dt) {
     input.update(dt);
+    powerUp.update(dt);
+    runner.setSpeedMultiplier(powerUp.speedMultiplier);
     if (gameState.current === GAME_STATES.PLAYING) {
       runner.update(dt);
     } else if (gameState.current === GAME_STATES.MENU) {
@@ -235,7 +237,6 @@ try {
         sfx.play('power-up');
       });
       score.updateDistance(runner.s);
-      powerUp.update(dt);
     }
     fx.update(dt);
     fx.setSpeedIntensity(Math.max(difficulty, powerUp.boostRemaining > 0 ? 1 : 0));

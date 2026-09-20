@@ -168,3 +168,18 @@ test('Runner exposes lane, jump and slide actions with fixed-duration movement r
   assert.equal(runner.state, 'RUN');
   assert.equal(runner.collisionHeight, CONFIG.runner.runCollisionHeight);
 });
+
+test('Runner applies an active boost multiplier to forward speed', async () => {
+  const module = await loadModule('../src/entities/Runner.js');
+  assert.ok(module, 'Runner module must exist');
+  const runner = new module.Runner({
+    THREE: TEST_THREE,
+    Vector3: TestVector3,
+    track: createTrack(),
+    config: CONFIG,
+    palette: { ochreRed: 0, plaster: 0, dunhuangGold: 0, stoneBlue: 0, ink: 0 },
+  });
+  runner.setSpeedMultiplier(1.5);
+  runner.update(0.2);
+  assert.equal(runner.speed, Math.min(CONFIG.runner.maxSpeed, CONFIG.runner.baseSpeed + runner.s * CONFIG.runner.accelPerMeter) * 1.5);
+});
