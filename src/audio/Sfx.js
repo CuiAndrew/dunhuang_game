@@ -8,19 +8,28 @@ export class Sfx {
   }
 
   async resume() {
-    if (!this.context) {
-      const host = typeof window === 'undefined' ? globalThis : window;
-      const AudioContextClass = host.AudioContext || host.webkitAudioContext;
-      if (!AudioContextClass) return false;
-      this.context = new AudioContextClass();
+    try {
+      if (!this.context) {
+        const host = typeof window === 'undefined' ? globalThis : window;
+        const AudioContextClass = host.AudioContext || host.webkitAudioContext;
+        if (!AudioContextClass) return false;
+        this.context = new AudioContextClass();
+      }
+      await this.context.resume();
+      return true;
+    } catch {
+      this.context = null;
+      return false;
     }
-    await this.context.resume();
-    return true;
   }
 
   toggleMute() {
     this.muted = !this.muted;
-    this.storage?.setItem('dunhuang-run-muted', String(this.muted));
+    try {
+      this.storage?.setItem('dunhuang-run-muted', String(this.muted));
+    } catch {
+      // Storage can be unavailable in private browsing; audio still works in-memory.
+    }
     return this.muted;
   }
 

@@ -15,3 +15,12 @@ test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
   const sfx = new Sfx({ config: { audio: {} }, storage: { getItem: () => null, setItem: () => {} } });
   assert.equal(await sfx.resume(), false);
 });
+
+test('Sfx keeps the game start path alive when AudioContext construction fails', async () => {
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const previousWindow = globalThis.window;
+  globalThis.window = { AudioContext: class { constructor() { throw new Error('blocked'); } } };
+  const sfx = new Sfx({ config: { audio: {} }, storage: { getItem: () => null, setItem: () => {} } });
+  assert.equal(await sfx.resume(), false);
+  globalThis.window = previousWindow;
+});
