@@ -6,7 +6,11 @@ export class Sfx {
     this.context = null;
     this.ambientTimer = null;
     this.ambientStep = 0;
-    this.muted = storage?.getItem('dunhuang-run-muted') === 'true';
+    try {
+      this.muted = storage?.getItem('dunhuang-run-muted') === 'true';
+    } catch {
+      this.muted = false;
+    }
   }
 
   async resume() {

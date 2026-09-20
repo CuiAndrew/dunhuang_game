@@ -24,6 +24,17 @@ test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
   assert.equal(await sfx.resume(), false);
 });
 
+test('Sfx keeps startup alive when mute preference storage is blocked', async () => {
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const blockedStorage = {
+    getItem: () => { throw new Error('storage blocked'); },
+    setItem: () => { throw new Error('storage blocked'); },
+  };
+  const sfx = new Sfx({ config: { audio: {} }, storage: blockedStorage });
+  assert.equal(sfx.muted, false);
+  assert.equal(sfx.toggleMute(), true);
+});
+
 test('Sfx keeps the game start path alive when AudioContext construction fails', async () => {
   const { Sfx } = await import('../src/audio/Sfx.js');
   const previousWindow = globalThis.window;
