@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PALETTE } from './art/Palette.js';
 import { createTextureSet } from './art/Textures.js';
 import { FxSystem } from './art/Fx.js';
-import { createObstacleVisual } from './art/Props.js';
+import { createObstacleVisual, createPickupVisual, createPursuerVisual } from './art/Props.js';
 import { Sfx } from './audio/Sfx.js';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
@@ -95,12 +95,18 @@ try {
   const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: PALETTE });
   const powerUp = new PowerUp({ config: CONFIG });
   const pursuer = new Pursuer({ config: CONFIG });
+  pursuer.visual = createPursuerVisual(THREE, PALETTE);
+  scene.add(pursuer.visual);
   const obstacleSpawner = new ObstacleSpawner({
     config: CONFIG,
     createVisual: () => createObstacleVisual(THREE, PALETTE, CONFIG),
   });
   obstacleSpawner.forEachVisual((visual) => scene.add(visual));
-  const pickupSpawner = new PickupSpawner({ config: CONFIG });
+  const pickupSpawner = new PickupSpawner({
+    config: CONFIG,
+    createCoinVisual: () => createPickupVisual(THREE, PALETTE, 'COIN'),
+    createPowerUpVisual: (type) => createPickupVisual(THREE, PALETTE, type),
+  });
   const collision = new CollisionSystem({
     config: CONFIG,
     onHit: () => {
@@ -134,6 +140,7 @@ try {
     forward: new THREE.Vector3(),
     right: new THREE.Vector3(),
   };
+  const pickupFrame = { position: new THREE.Vector3(), forward: new THREE.Vector3(), right: new THREE.Vector3() };
   const input = new Input({
     target: window,
     config: CONFIG,
@@ -185,11 +192,33 @@ try {
     if (gameState.current === GAME_STATES.PLAYING) {
       collision.update(runner, obstacleSpawner);
       pursuer.update(runner, dt);
+      track.evalTrack(pursuer.positionS, pickupFrame);
+      pursuer.visual.position.copy(pickupFrame.position);
+      pursuer.visual.position.y += 0.05;
+      pursuer.visual.rotation.y = Math.atan2(-pickupFrame.forward.x, pickupFrame.forward.z);
+      pursuer.visual.visible = !pursuer.dead;
       pickupSpawner.ensureAhead(runner.s, CONFIG.track.keepAhead);
+      pickupSpawner.forEachActive((pickup) => {
+        if (!pickup.visual) return;
+        if (!pickup.visual.parent) scene.add(pickup.visual);
+        track.evalTrack(pickup.s, pickupFrame);
+        pickup.visual.visible = !pickup.collected;
+        pickup.visual.position.set(
+          pickupFrame.position.x + pickupFrame.right.x * CONFIG.laneOffsets[pickup.lane],
+          pickupFrame.position.y + (pickup.type ? 1.5 : 1.15),
+          pickupFrame.position.z + pickupFrame.right.z * CONFIG.laneOffsets[pickup.lane],
+        );
+        pickup.visual.rotation.y += dt * 3;
+      });
       pickupSpawner.collectCoins(runner, () => {
         score.addCoin();
         fx.emit(runner.root.position);
         sfx.play('coin');
+      });
+      pickupSpawner.collectPowerUps(runner, (pickup) => {
+        powerUp.activate(pickup.type);
+        fx.emit(runner.root.position, 12);
+        sfx.play('power-up');
       });
       score.updateDistance(runner.s);
       powerUp.update(dt);
@@ -199,7 +228,10 @@ try {
       distance: score.distance,
       coins: score.coins,
       highScore: score.highScore,
-      powerUp: { label: powerUp.boostRemaining > 0 ? '加速' : (powerUp.magnetRemaining > 0 ? '磁铁' : ''), remainingRatio: 0 },
+      powerUp: {
+        label: powerUp.boostRemaining > 0 ? '加速' : (powerUp.magnetRemaining > 0 ? '磁铁' : (powerUp.shieldActive ? '护盾' : '')),
+        remainingRatio: Math.max(powerUp.boostRemaining / CONFIG.powerUp.boostDuration, powerUp.magnetRemaining / CONFIG.powerUp.magnetDuration),
+      },
       pursuerDistance: pursuer.distance,
     });
     cameraRig.update(runner, dt);
