@@ -71,3 +71,19 @@ test('Score totals distance and coins then persists only a new high score', asyn
   score.commitHighScore();
   assert.deepEqual(writes, [[CONFIG.score.highScoreStorageKey, '45']]);
 });
+
+test('spawners reset their cursors and active records for a clean restart', async () => {
+  const { ObstacleSpawner } = await import('../src/world/ObstacleSpawner.js');
+  const { PickupSpawner } = await import('../src/world/PickupSpawner.js');
+  const obstacles = new ObstacleSpawner({ config: CONFIG, random: () => 0.2 });
+  obstacles.ensureAhead(0, 100, 0);
+  assert.ok(obstacles.obstacleCount() > 0);
+  obstacles.reset();
+  assert.equal(obstacles.obstacleCount(), 0);
+  const pickups = new PickupSpawner({ config: CONFIG, random: () => 0.2 });
+  pickups.ensureAhead(0, 300);
+  assert.ok(pickups.getCoinSnapshots().length > 0);
+  pickups.reset();
+  assert.equal(pickups.getCoinSnapshots().length, 0);
+  assert.equal(pickups.getPowerUpSnapshots().length, 0);
+});

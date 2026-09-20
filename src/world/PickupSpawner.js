@@ -21,6 +21,13 @@ export class PickupSpawner {
     }
   }
 
+  reset() {
+    this.coins.length = 0;
+    this.powerUps.length = 0;
+    this.nextCoinS = this.config.spawn.coinGroupGapMin;
+    this.nextPowerUpS = this.config.powerUp.pickupGapMin;
+  }
+
   recycleBefore(s) {
     this.coins = this.coins.filter((coin) => coin.s >= s && !coin.collected);
     this.powerUps = this.powerUps.filter((powerUp) => powerUp.s >= s && !powerUp.collected);

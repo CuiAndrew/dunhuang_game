@@ -124,6 +124,8 @@ try {
       score.reset();
       powerUp.reset();
       pursuer.reset();
+      obstacleSpawner.reset();
+      pickupSpawner.reset();
       gameState.transition(GAME_STATES.PLAYING);
     },
   });

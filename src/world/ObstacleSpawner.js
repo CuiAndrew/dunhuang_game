@@ -68,6 +68,23 @@ export class ObstacleSpawner {
     }
   }
 
+  reset() {
+    for (let index = 0; index < this.activeObstacleCount; index += 1) {
+      const obstacle = this.activeObstacles[index];
+      obstacle.visual?.setType && (obstacle.visual.visible = false);
+      this.freeObstacles.push(obstacle);
+      this.activeObstacles[index] = null;
+    }
+    for (let index = 0; index < this.activeGroupCount; index += 1) {
+      this.freeGroups.push(this.activeGroups[index]);
+      this.activeGroups[index] = null;
+    }
+    this.activeObstacleCount = 0;
+    this.activeGroupCount = 0;
+    this.nextSpawnS = this.config.spawn.obstacleStartDistance;
+    this.groupSerial = 0;
+  }
+
   _preallocate() {
     for (let index = 0; index < this.config.spawn.obstacleGroupPoolSize; index += 1) {
       this.freeGroups.push({ s: 0, id: 0, laneCount: 0, occupiedLanes: new Array(this.config.laneOffsets.length) });
