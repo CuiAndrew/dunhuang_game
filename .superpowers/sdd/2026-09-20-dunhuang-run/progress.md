@@ -18,4 +18,4 @@ Task 4: complete — solvable obstacle groups, collision tolerance, score and hi
 Task 5: complete — pursuer economy, pickup spawning, magnet/shield/boost state and clean spawner reset are implemented.
 Task 6: complete — procedural textures, palette, lane/rail props, pursuer and pickup visuals plus reusable decoration pool are implemented.
 Task 7: complete — HUD, menu/pause/result screens, particles, mute-safe SFX and pentatonic ambient loop are implemented.
-Task 8: in progress — automated suite is green and local-browser smoke test passes; adaptive FPS downgrade and long-run profiling remain follow-up work.
+Task 8: complete for MVP — automated suite is green, local-browser smoke test passes, and sustained low FPS reduces pixel ratio then disables shadows. Five-minute device profiling remains a release hardening activity rather than a blocker for this prototype.
