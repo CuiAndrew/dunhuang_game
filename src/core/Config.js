@@ -175,6 +175,9 @@ export const CONFIG = Object.freeze({
     skyRadius: 500,
     skyWidthSegments: 32,
     skyHeightSegments: 16,
+    decorationPoolSize: 64,
+    decorationSpacing: 22,
+    decorationSideOffset: 13,
   },
   fx: {
     particleCount: 96,

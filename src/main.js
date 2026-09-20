@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { PALETTE } from './art/Palette.js';
 import { createTextureSet } from './art/Textures.js';
 import { FxSystem } from './art/Fx.js';
-import { createObstacleVisual, createPickupVisual, createPursuerVisual } from './art/Props.js';
+import { createEnvironmentVisual, createObstacleVisual, createPickupVisual, createPursuerVisual } from './art/Props.js';
 import { Sfx } from './audio/Sfx.js';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
@@ -22,6 +22,7 @@ import { PickupSpawner } from './world/PickupSpawner.js';
 import { ObstacleSpawner } from './world/ObstacleSpawner.js';
 import { TrackGraph } from './world/TrackGraph.js';
 import { TrackMesh } from './world/TrackMesh.js';
+import { EnvironmentSystem } from './world/Environment.js?v=20260920-3';
 
 const canvas = document.querySelector('#game-canvas');
 const gameShell = document.querySelector('#game-shell');
@@ -73,6 +74,12 @@ try {
   trackMesh.material.map = textures.stone;
   trackMesh.material.needsUpdate = true;
   scene.add(trackMesh.root);
+  const environment = new EnvironmentSystem({
+    config: CONFIG,
+    track,
+    createVisual: () => createEnvironmentVisual(THREE, PALETTE),
+  });
+  environment.forEachVisual((visual) => scene.add(visual));
   const sky = new THREE.Mesh(
     new THREE.SphereGeometry(CONFIG.art.skyRadius, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
     new THREE.MeshBasicMaterial({ map: textures.sky, side: THREE.BackSide }),
@@ -134,6 +141,7 @@ try {
       pursuer.reset();
       obstacleSpawner.reset();
       pickupSpawner.reset();
+      environment.reset();
       gameState.transition(GAME_STATES.PLAYING);
     },
   });
@@ -177,6 +185,7 @@ try {
     }
     track.ensureAhead(runner.s, CONFIG.track.keepAhead);
     trackMesh.updateFromTrack();
+    environment.update(runner.s, CONFIG.track.keepAhead);
     const difficulty = (runner.speed - CONFIG.runner.baseSpeed)
       / (CONFIG.runner.maxSpeed - CONFIG.runner.baseSpeed);
     obstacleSpawner.ensureAhead(runner.s, CONFIG.track.keepAhead, Math.max(0, Math.min(1, difficulty)));

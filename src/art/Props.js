@@ -69,3 +69,56 @@ export function createPickupVisual(THREE, palette, type = 'COIN') {
   mesh.userData.kind = type;
   return mesh;
 }
+
+export function createEnvironmentVisual(THREE, palette) {
+  const root = new THREE.Group();
+  const variants = new Map();
+  const make = (kind, children) => {
+    const variant = new THREE.Group();
+    variant.name = kind.toLowerCase();
+    variant.add(...children);
+    variants.set(kind, variant);
+    root.add(variant);
+  };
+  const stone = new THREE.MeshStandardMaterial({ color: palette.bronze, roughness: 0.92 });
+  const plaster = new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.88 });
+  const red = new THREE.MeshStandardMaterial({ color: palette.ochreRed, roughness: 0.72 });
+  const gold = new THREE.MeshStandardMaterial({ color: palette.dunhuangGold, emissive: palette.dunhuangGold, emissiveIntensity: 0.12 });
+  const green = new THREE.MeshStandardMaterial({ color: palette.stoneGreen, roughness: 0.8 });
+  const poleGeometry = new THREE.CylinderGeometry(0.06, 0.08, 4.2, 6);
+
+  const dune = new THREE.Mesh(new THREE.ConeGeometry(4.5, 2.5, 12), new THREE.MeshStandardMaterial({ color: palette.sand, roughness: 1 }));
+  dune.position.y = 1.1;
+  make('DUNE', [dune]);
+
+  const templeBase = new THREE.Mesh(new THREE.BoxGeometry(4, 2.6, 2.6), stone);
+  templeBase.position.y = 1.3;
+  const templeRoof = new THREE.Mesh(new THREE.ConeGeometry(3.2, 1.4, 4), red);
+  templeRoof.position.y = 3.2;
+  templeRoof.rotation.y = Math.PI / 4;
+  make('TEMPLE', [templeBase, templeRoof]);
+
+  const cave = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 2.8, 3.2, 12, 1, false, 0, Math.PI), plaster);
+  cave.rotation.z = Math.PI / 2;
+  cave.position.y = 1.6;
+  make('CAVE', [cave]);
+
+  const lanternPole = new THREE.Mesh(poleGeometry, stone);
+  lanternPole.position.y = 2.1;
+  const lantern = new THREE.Mesh(new THREE.OctahedronGeometry(0.42, 0), gold);
+  lantern.position.y = 4.0;
+  make('LANTERN', [lanternPole, lantern]);
+
+  const flagPole = new THREE.Mesh(poleGeometry, stone);
+  flagPole.position.y = 2.1;
+  const flag = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.75, 0.05), green);
+  flag.position.set(0.75, 3.7, 0);
+  make('FLAG', [flagPole, flag]);
+
+  root.setKind = (kind) => {
+    for (const [name, variant] of variants) variant.visible = name === kind;
+  };
+  root.setKind('DUNE');
+  root.visible = false;
+  return root;
+}

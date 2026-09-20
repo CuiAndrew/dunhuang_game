@@ -78,6 +78,7 @@ test('index bootstraps Three r169 and exposes accessible application containers'
   assert.match(html, /id="hud"/);
   assert.match(html, /id="screen-layer"/);
   assert.match(html, /id="error-panel"/);
-  assert.match(html, /src="\.\/src\/main\.js"/);
+  assert.match(html, /src="\.\/src\/main\.js(?:\?v=[^"]+)?"/);
+  assert.match(html, /src="\.\/src\/main\.js\?v=/);
   assert.match(html, /#screen-layer\[hidden\]\s*\{\s*display:\s*none;/);
 });

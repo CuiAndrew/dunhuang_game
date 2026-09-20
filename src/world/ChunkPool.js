@@ -6,7 +6,9 @@ export class ChunkPool {
     this.active = [];
     this.create = create;
     for (let index = 0; index < size; index += 1) {
-      this.free.push({ item: create(), s: 0, kind: '', active: false });
+      const slot = { item: create(), s: 0, kind: '', active: false };
+      this.items[index] = slot;
+      this.free.push(slot);
     }
   }
 

@@ -13,6 +13,7 @@ test('art and audio modules expose procedural-only factories', async () => {
   assert.equal(typeof sfx.Sfx.prototype.stopAmbient, 'function');
   assert.equal(typeof props.createPursuerVisual, 'function');
   assert.equal(typeof props.createPickupVisual, 'function');
+  assert.equal(typeof props.createEnvironmentVisual, 'function');
 });
 
 test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
