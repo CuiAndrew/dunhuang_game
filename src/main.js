@@ -120,6 +120,8 @@ try {
     config: CONFIG,
     onHit: () => {
       fx.emit(runner.root.position);
+      fx.triggerImpact();
+      cameraRig.triggerShake();
       sfx.play('hit');
       if (!powerUp.consumeShield()) {
         pursuer.registerHit(runner);
@@ -236,6 +238,9 @@ try {
       powerUp.update(dt);
     }
     fx.update(dt);
+    fx.setSpeedIntensity(Math.max(difficulty, powerUp.boostRemaining > 0 ? 1 : 0));
+    fx.speedLines.position.copy(runner.root.position);
+    fx.speedLines.rotation.y = runner.root.rotation.y;
     hud.update({
       distance: score.distance,
       coins: score.coins,
@@ -245,6 +250,7 @@ try {
         remainingRatio: Math.max(powerUp.boostRemaining / CONFIG.powerUp.boostDuration, powerUp.magnetRemaining / CONFIG.powerUp.magnetDuration),
       },
       pursuerDistance: pursuer.distance,
+      impactRatio: fx.impactRemaining / CONFIG.fx.impactDuration,
     });
     cameraRig.update(runner, dt);
     keyLight.target.position.copy(runner.root.position);

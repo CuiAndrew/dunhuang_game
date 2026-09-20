@@ -113,6 +113,24 @@ test('CameraRig follows the runner from behind and increases FOV with speed', as
   assert.ok(camera.updateProjectionMatrixCalls > 0);
 });
 
+test('CameraRig applies a bounded impact shake after a collision', async () => {
+  const module = await loadModule('../src/entities/CameraRig.js');
+  assert.ok(module, 'CameraRig module must exist');
+  const camera = {
+    position: new TestVector3(),
+    fov: CONFIG.camera.fovBase,
+    updateProjectionMatrix() {},
+    lookAt() {},
+  };
+  const rig = new module.CameraRig({ camera, Vector3: TestVector3, track: createTrack(), config: CONFIG });
+  rig.snapTo({ s: 20, lateral: 0, speed: CONFIG.runner.baseSpeed });
+  const baseline = camera.position.x;
+  rig.triggerShake();
+  rig.update({ s: 20, lateral: 0, speed: CONFIG.runner.baseSpeed }, 0.04);
+  assert.notEqual(camera.position.x, baseline);
+  assert.equal(rig.shakeRemaining > 0, true);
+});
+
 test('Runner exposes lane, jump and slide actions with fixed-duration movement rules', async () => {
   const module = await loadModule('../src/entities/Runner.js');
   assert.ok(module, 'Runner module must exist');

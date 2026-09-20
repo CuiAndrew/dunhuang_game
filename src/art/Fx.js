@@ -13,7 +13,38 @@ export class FxSystem {
     this.points = new THREE.Points(this.geometry, this.material);
     this.points.frustumCulled = false;
     scene.add(this.points);
+    const linePositions = new Float32Array(18 * 2 * 3);
+    for (let index = 0; index < 18; index += 1) {
+      const offset = index * 6;
+      const x = (index % 6 - 2.5) * 0.75;
+      const y = 0.5 + (index % 3) * 0.55;
+      linePositions[offset] = x;
+      linePositions[offset + 1] = y;
+      linePositions[offset + 2] = -0.4;
+      linePositions[offset + 3] = x * 1.35;
+      linePositions[offset + 4] = y + 0.15;
+      linePositions[offset + 5] = 1.1;
+    }
+    this.speedLineGeometry = new THREE.BufferGeometry();
+    this.speedLineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+    this.speedLineMaterial = new THREE.LineBasicMaterial({ color: palette.dunhuangGold, transparent: true, opacity: 0 });
+    this.speedLines = new THREE.LineSegments(this.speedLineGeometry, this.speedLineMaterial);
+    this.speedLines.visible = false;
+    scene.add(this.speedLines);
     this.cursor = 0;
+    this.impactRemaining = 0;
+    this.speedLineIntensity = 0;
+  }
+
+  triggerImpact() {
+    this.impactRemaining = this.config.fx.impactDuration;
+  }
+
+  setSpeedIntensity(value) {
+    this.speedLineIntensity = Math.max(0, Math.min(1, value));
+    this.material.opacity = 0.45 + this.speedLineIntensity * 0.35;
+    this.speedLineMaterial.opacity = this.speedLineIntensity * this.config.fx.speedLineOpacity;
+    this.speedLines.visible = this.speedLineIntensity > 0.08;
   }
 
   emit(position, count = 8) {
@@ -33,6 +64,7 @@ export class FxSystem {
   }
 
   update(dt) {
+    this.impactRemaining = Math.max(0, this.impactRemaining - dt);
     for (let index = 0; index < this.config.fx.particleCount; index += 1) {
       if (this.life[index] <= 0) continue;
       const offset = index * 3;

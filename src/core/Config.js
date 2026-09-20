@@ -147,6 +147,8 @@ export const CONFIG = Object.freeze({
     followRate: 8,
     near: 0.1,
     far: 500,
+    shakeDuration: 0.28,
+    shakeAmplitude: 0.12,
   },
   score: {
     coinValue: 10,
@@ -182,6 +184,8 @@ export const CONFIG = Object.freeze({
   fx: {
     particleCount: 96,
     particleLife: 0.4,
+    impactDuration: 0.32,
+    speedLineOpacity: 0.28,
   },
   audio: {
     coinFrequency: 880,

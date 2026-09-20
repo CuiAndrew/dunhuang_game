@@ -14,6 +14,9 @@ export class CameraRig {
       forward: new Vector3(),
       right: new Vector3(),
     };
+    this.shakeRemaining = 0;
+    this.shakeTime = 0;
+    this.shakeAmplitude = 0;
   }
 
   snapTo(runner) {
@@ -21,8 +24,20 @@ export class CameraRig {
   }
 
   update(runner, dt) {
+    this.shakeRemaining = Math.max(0, this.shakeRemaining - dt);
+    this.shakeTime += dt;
     const blend = 1 - Math.exp(-this.config.camera.followRate * dt);
     this._positionCamera(runner, blend);
+    if (this.shakeRemaining > 0) {
+      const ratio = this.shakeRemaining / this.config.camera.shakeDuration;
+      this.camera.position.x += Math.sin(this.shakeTime * 71) * this.shakeAmplitude * ratio;
+      this.camera.position.y += Math.cos(this.shakeTime * 53) * this.shakeAmplitude * ratio;
+    }
+  }
+
+  triggerShake(duration = this.config.camera.shakeDuration, amplitude = this.config.camera.shakeAmplitude) {
+    this.shakeRemaining = duration;
+    this.shakeAmplitude = amplitude;
   }
 
   _positionCamera(runner, blend) {

@@ -8,6 +8,8 @@ test('art and audio modules expose procedural-only factories', async () => {
   const props = await import('../src/art/Props.js');
   assert.equal(typeof textures.createTextureSet, 'function');
   assert.equal(typeof fx.FxSystem, 'function');
+  assert.equal(typeof fx.FxSystem.prototype.triggerImpact, 'function');
+  assert.equal(typeof fx.FxSystem.prototype.setSpeedIntensity, 'function');
   assert.equal(typeof sfx.Sfx, 'function');
   assert.equal(typeof sfx.Sfx.prototype.startAmbient, 'function');
   assert.equal(typeof sfx.Sfx.prototype.stopAmbient, 'function');

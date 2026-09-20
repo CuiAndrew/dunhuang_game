@@ -9,13 +9,14 @@ export class Hud {
     this.danger = this._make('danger-vignette', 'danger-vignette');
   }
 
-  update({ distance, coins, highScore, powerUp, pursuerDistance }) {
+  update({ distance, coins, highScore, powerUp, pursuerDistance, impactRatio = 0 }) {
     this.distance.textContent = `距离 ${Math.floor(distance)} m`;
     this.coins.textContent = `◈ ${coins}`;
     this.highScore.textContent = `最高分 ${Math.floor(highScore)}`;
     this.powerUp.textContent = powerUp?.label ?? '';
     this.powerUp.style.setProperty('--power-progress', `${Math.max(0, Math.min(1, powerUp?.remainingRatio ?? 0)) * 100}%`);
-    this.danger.style.opacity = pursuerDistance < 6 ? String(Math.min(0.72, (6 - pursuerDistance) / 8)) : '0';
+    const pursuerRatio = pursuerDistance < 6 ? Math.min(0.72, (6 - pursuerDistance) / 8) : 0;
+    this.danger.style.opacity = String(Math.max(pursuerRatio, impactRatio));
   }
 
   _make(id, className) {
