@@ -167,6 +167,8 @@ try {
       }
       if (gameState.current === GAME_STATES.PLAYING) {
         runner.handleAction(action);
+        if (action === 'JUMP') sfx.play('jump');
+        if (action === 'SLIDE') sfx.play('slide');
       }
     },
   });

@@ -64,16 +64,31 @@ export class Sfx {
 
   play(name) {
     if (this.muted || !this.context) return;
+    const audio = this.config.audio;
+    const profiles = {
+      coin: {
+        type: 'triangle',
+        startFrequency: audio.coinFrequency,
+        endFrequency: audio.coinEndFrequency,
+        duration: 0.2,
+      },
+      'power-up': { type: 'sine', startFrequency: 440, endFrequency: 880, duration: 0.28 },
+      hit: { type: 'square', startFrequency: 120, endFrequency: 55, duration: 0.32 },
+      jump: { type: 'sine', startFrequency: 320, endFrequency: 560, duration: 0.2 },
+      slide: { type: 'sawtooth', startFrequency: 180, endFrequency: 90, duration: 0.18 },
+      roar: { type: 'sawtooth', startFrequency: 90, endFrequency: 42, duration: 0.48 },
+    };
+    const profile = profiles[name] ?? { type: 'triangle', startFrequency: 220, endFrequency: 440, duration: 0.18 };
     const oscillator = this.context.createOscillator();
     const gain = this.context.createGain();
     const now = this.context.currentTime;
-    oscillator.type = name === 'hit' ? 'square' : 'triangle';
-    oscillator.frequency.setValueAtTime(name === 'coin' ? this.config.audio.coinFrequency : 220, now);
-    oscillator.frequency.linearRampToValueAtTime(name === 'coin' ? this.config.audio.coinEndFrequency : 440, now + 0.08);
-    gain.gain.setValueAtTime(this.config.audio.masterVolume, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    oscillator.type = profile.type;
+    oscillator.frequency.setValueAtTime(profile.startFrequency, now);
+    oscillator.frequency.linearRampToValueAtTime(profile.endFrequency, now + profile.duration * 0.45);
+    gain.gain.setValueAtTime(audio.masterVolume, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + profile.duration);
     oscillator.connect(gain).connect(this.context.destination);
     oscillator.start(now);
-    oscillator.stop(now + 0.2);
+    oscillator.stop(now + profile.duration + 0.02);
   }
 }

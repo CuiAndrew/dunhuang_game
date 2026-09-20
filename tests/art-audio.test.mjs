@@ -32,3 +32,50 @@ test('Sfx keeps the game start path alive when AudioContext construction fails',
   assert.equal(await sfx.resume(), false);
   globalThis.window = previousWindow;
 });
+
+test('Sfx maps runner and pursuer events to distinct procedural sound profiles', async () => {
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const calls = [];
+  const context = {
+    currentTime: 10,
+    destination: {},
+    createOscillator() {
+      const oscillator = {
+        type: null,
+        frequency: {
+          setValueAtTime: (value) => { oscillator.startFrequency = value; },
+          linearRampToValueAtTime: (value) => { oscillator.endFrequency = value; },
+        },
+        connect: () => oscillator,
+        start: () => { calls.push(oscillator); },
+        stop: () => {},
+      };
+      return oscillator;
+    },
+    createGain() {
+      const gain = {
+        gain: {
+          setValueAtTime: () => {},
+          exponentialRampToValueAtTime: () => {},
+        },
+        connect: () => gain,
+      };
+      return gain;
+    },
+  };
+  const sfx = new Sfx({
+    config: { audio: { coinFrequency: 880, coinEndFrequency: 1320, masterVolume: 0.08 } },
+    storage: { getItem: () => null, setItem: () => {} },
+  });
+  sfx.context = context;
+
+  sfx.play('jump');
+  sfx.play('slide');
+  sfx.play('roar');
+
+  assert.deepEqual(calls.map(({ type, startFrequency, endFrequency }) => ({ type, startFrequency, endFrequency })), [
+    { type: 'sine', startFrequency: 320, endFrequency: 560 },
+    { type: 'sawtooth', startFrequency: 180, endFrequency: 90 },
+    { type: 'sawtooth', startFrequency: 90, endFrequency: 42 },
+  ]);
+});
