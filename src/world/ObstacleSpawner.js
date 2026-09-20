@@ -10,6 +10,7 @@ export class ObstacleSpawner {
     this.freeObstacles = [];
     this.activeGroupCount = 0;
     this.activeObstacleCount = 0;
+    this.allVisuals = [];
     this.nextSpawnS = config.spawn.obstacleStartDistance;
     this.groupSerial = 0;
     this._preallocate();
@@ -61,18 +62,26 @@ export class ObstacleSpawner {
     return this.activeObstacleCount;
   }
 
+  forEachVisual(callback) {
+    for (const visual of this.allVisuals) {
+      callback(visual);
+    }
+  }
+
   _preallocate() {
     for (let index = 0; index < this.config.spawn.obstacleGroupPoolSize; index += 1) {
       this.freeGroups.push({ s: 0, id: 0, laneCount: 0, occupiedLanes: new Array(this.config.laneOffsets.length) });
     }
     for (let index = 0; index < this.config.spawn.obstaclePoolSize; index += 1) {
+      const visual = this.createVisual();
+      this.allVisuals.push(visual);
       this.freeObstacles.push({
         s: 0,
         lane: 0,
         groupId: 0,
         type: 'LOW_BARRIER',
         resolved: false,
-        visual: this.createVisual(),
+        visual,
       });
     }
   }
@@ -101,6 +110,7 @@ export class ObstacleSpawner {
       obstacle.groupId = group.id;
       obstacle.type = this._pickType();
       obstacle.resolved = false;
+      obstacle.visual?.setType?.(obstacle.type);
     }
 
     const spawn = this.config.spawn;
@@ -161,5 +171,8 @@ export class ObstacleSpawner {
     this.activeObstacles[lastIndex] = null;
     this.activeObstacleCount = lastIndex;
     this.freeObstacles.push(obstacle);
+    if (obstacle.visual) {
+      obstacle.visual.visible = false;
+    }
   }
 }

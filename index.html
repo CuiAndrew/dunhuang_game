@@ -68,6 +68,39 @@
 
       #hud { pointer-events: none; }
 
+      .hud-value, .hud-power-up {
+        position: absolute;
+        z-index: 2;
+        padding: 0.55rem 0.75rem;
+        border: 1px solid rgb(227 198 139 / 55%);
+        border-radius: 0.25rem;
+        color: var(--plaster);
+        background: rgb(43 31 26 / 67%);
+        font: 0.8rem/1.2 var(--utility-font);
+        letter-spacing: 0.04em;
+      }
+
+      #distance-display { top: var(--safe-top); left: var(--safe-left); }
+      #coin-display { top: var(--safe-top); right: var(--safe-right); }
+      #high-score-display { top: var(--safe-top); left: 50%; transform: translateX(-50%); }
+      #power-up-display { bottom: var(--safe-bottom); left: var(--safe-left); min-width: 7rem; background: conic-gradient(var(--dunhuang-gold) var(--power-progress, 0%), rgb(43 31 26 / 67%) 0); }
+      #danger-vignette { inset: 0; border: 3rem solid rgb(200 64 47 / 40%); opacity: 0; transition: opacity 120ms linear; }
+
+      #pause-button, #mute-button {
+        position: absolute;
+        z-index: 3;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        border: 1px solid var(--bronze);
+        border-radius: 0.25rem;
+        color: var(--plaster);
+        background: rgb(43 31 26 / 78%);
+        cursor: pointer;
+        pointer-events: auto;
+      }
+      #pause-button { top: calc(var(--safe-top) + 3.3rem); right: var(--safe-right); }
+      #mute-button { bottom: var(--safe-bottom); right: var(--safe-right); }
+
       #screen-layer {
         display: grid;
         place-items: center;
@@ -167,7 +200,15 @@
   <body>
     <main id="game-shell" aria-label="敦煌逃亡游戏">
       <canvas id="game-canvas" aria-label="敦煌逃亡 3D 游戏画面"></canvas>
-      <div id="hud" aria-live="polite" aria-atomic="true"></div>
+      <div id="hud" aria-live="polite" aria-atomic="true">
+        <div id="distance-display" class="hud-value">距离 0 m</div>
+        <div id="coin-display" class="hud-value">◈ 0</div>
+        <div id="high-score-display" class="hud-value">最高分 0</div>
+        <div id="power-up-display" class="hud-power-up"></div>
+        <div id="danger-vignette" class="danger-vignette" aria-hidden="true"></div>
+        <button id="pause-button" type="button" aria-label="暂停游戏">Ⅱ</button>
+        <button id="mute-button" type="button" aria-label="静音切换">♫</button>
+      </div>
       <section id="screen-layer" aria-label="游戏开始界面">
         <div class="title-panel">
           <p class="eyebrow">壁画行者 · 沙海逃亡</p>
