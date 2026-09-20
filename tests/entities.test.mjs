@@ -112,3 +112,41 @@ test('CameraRig follows the runner from behind and increases FOV with speed', as
   assert.equal(camera.fov, CONFIG.camera.fovMax);
   assert.ok(camera.updateProjectionMatrixCalls > 0);
 });
+
+test('Runner exposes lane, jump and slide actions with fixed-duration movement rules', async () => {
+  const module = await loadModule('../src/entities/Runner.js');
+  assert.ok(module, 'Runner module must exist');
+
+  const runner = new module.Runner({
+    THREE: TEST_THREE,
+    Vector3: TestVector3,
+    track: createTrack(),
+    config: CONFIG,
+    palette: { ochreRed: 0, plaster: 0, dunhuangGold: 0, stoneBlue: 0, ink: 0 },
+  });
+  assert.equal(typeof runner.handleAction, 'function', 'Runner must receive semantic input actions');
+  assert.equal(typeof runner.moveLane, 'function', 'Runner must support lane movement');
+  if (typeof runner.handleAction !== 'function' || typeof runner.moveLane !== 'function') {
+    return;
+  }
+
+  runner.handleAction('LEFT');
+  runner.update(CONFIG.runner.laneChangeTime);
+  assert.equal(runner.laneIndex, 0);
+  assert.equal(runner.lateral, CONFIG.laneOffsets[0]);
+
+  runner.handleAction('JUMP');
+  runner.update(CONFIG.runner.jumpRiseTime);
+  assert.equal(runner.state, 'JUMP');
+  assert.ok(Math.abs(runner.verticalOffset - CONFIG.runner.jumpHeight) < 0.0001);
+  runner.update(CONFIG.runner.jumpFallTime);
+  assert.equal(runner.state, 'RUN');
+  assert.equal(runner.verticalOffset, 0);
+
+  runner.handleAction('SLIDE');
+  assert.equal(runner.state, 'SLIDE');
+  assert.equal(runner.collisionHeight, CONFIG.runner.slideCollisionHeight);
+  runner.update(CONFIG.runner.slideTime);
+  assert.equal(runner.state, 'RUN');
+  assert.equal(runner.collisionHeight, CONFIG.runner.runCollisionHeight);
+});

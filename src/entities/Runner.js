@@ -1,4 +1,12 @@
 // Owns the player’s track-relative position and a lightweight procedural traveler silhouette.
+export const RUNNER_STATES = Object.freeze({
+  RUN: 'RUN',
+  JUMP: 'JUMP',
+  SLIDE: 'SLIDE',
+  STUMBLE: 'STUMBLE',
+  DEAD: 'DEAD',
+});
+
 export class Runner {
   constructor({ THREE, Vector3, track, config, palette }) {
     this.THREE = THREE;
@@ -9,6 +17,19 @@ export class Runner {
     this.speed = config.runner.baseSpeed;
     this.lateral = 0;
     this.runTime = 0;
+    this.laneIndex = 1;
+    this.laneFrom = config.laneOffsets[this.laneIndex];
+    this.laneTarget = this.laneFrom;
+    this.laneElapsed = config.runner.laneChangeTime;
+    this.edgeBounceElapsed = config.runner.edgeBounceTime;
+    this.edgeBounceDirection = 0;
+    this.jumpElapsed = 0;
+    this.slideElapsed = 0;
+    this.jumpBufferRemaining = 0;
+    this.coyoteRemaining = config.runner.coyoteTime;
+    this.verticalOffset = 0;
+    this.collisionHeight = config.runner.runCollisionHeight;
+    this.state = RUNNER_STATES.RUN;
     this.trackFrame = {
       position: new Vector3(),
       forward: new Vector3(),
@@ -25,6 +46,20 @@ export class Runner {
     this.speed = this.config.runner.baseSpeed;
     this.lateral = 0;
     this.runTime = 0;
+    this.laneIndex = 1;
+    this.laneFrom = this.config.laneOffsets[this.laneIndex];
+    this.laneTarget = this.laneFrom;
+    this.laneElapsed = this.config.runner.laneChangeTime;
+    this.edgeBounceElapsed = this.config.runner.edgeBounceTime;
+    this.edgeBounceDirection = 0;
+    this.jumpElapsed = 0;
+    this.slideElapsed = 0;
+    this.jumpBufferRemaining = 0;
+    this.coyoteRemaining = this.config.runner.coyoteTime;
+    this.verticalOffset = 0;
+    this.collisionHeight = this.config.runner.runCollisionHeight;
+    this.state = RUNNER_STATES.RUN;
+    this.root.scale.y = 1;
     this.syncToTrack();
   }
 
@@ -35,6 +70,7 @@ export class Runner {
     );
     this.s += this.speed * dt;
     this.runTime += dt;
+    this._updateActionState(dt);
     this.syncToTrack();
     this._animateLegs();
   }
@@ -50,10 +86,48 @@ export class Runner {
     this.track.evalTrack(this.s, this.trackFrame);
     this.root.position.set(
       this.trackFrame.position.x + this.trackFrame.right.x * this.lateral,
-      this.trackFrame.position.y + this.config.scene.runnerBaseHeight,
+      this.trackFrame.position.y + this.config.scene.runnerBaseHeight + this.verticalOffset,
       this.trackFrame.position.z + this.trackFrame.right.z * this.lateral,
     );
     this.root.rotation.y = Math.atan2(-this.trackFrame.forward.x, this.trackFrame.forward.z);
+  }
+
+  handleAction(action) {
+    if (action === 'LEFT') {
+      this.moveLane(-1);
+      return;
+    }
+    if (action === 'RIGHT') {
+      this.moveLane(1);
+      return;
+    }
+    if (action === 'JUMP') {
+      if (this.state === RUNNER_STATES.RUN || this.coyoteRemaining > 0) {
+        this._startJump();
+      } else {
+        this.jumpBufferRemaining = this.config.runner.inputBuffer;
+      }
+      return;
+    }
+    if (action === 'SLIDE' && this.state === RUNNER_STATES.RUN) {
+      this.state = RUNNER_STATES.SLIDE;
+      this.slideElapsed = 0;
+      this.collisionHeight = this.config.runner.slideCollisionHeight;
+      this.root.scale.y = this.config.runner.slideScaleY;
+    }
+  }
+
+  moveLane(direction) {
+    const requestedLane = this.laneIndex + direction;
+    if (requestedLane < 0 || requestedLane >= this.config.laneOffsets.length) {
+      this.edgeBounceElapsed = 0;
+      this.edgeBounceDirection = direction;
+      return;
+    }
+    this.laneFrom = this.lateral;
+    this.laneIndex = requestedLane;
+    this.laneTarget = this.config.laneOffsets[this.laneIndex];
+    this.laneElapsed = 0;
   }
 
   _buildMesh() {
@@ -98,5 +172,61 @@ export class Runner {
     const swing = Math.sin(this.runTime * this.config.runner.legRunRate) * this.config.runner.legRunAmplitude;
     this.leftLeg.rotation.x = swing;
     this.rightLeg.rotation.x = -swing;
+  }
+
+  _startJump() {
+    this.state = RUNNER_STATES.JUMP;
+    this.jumpElapsed = 0;
+    this.verticalOffset = 0;
+    this.jumpBufferRemaining = 0;
+  }
+
+  _updateActionState(dt) {
+    const runner = this.config.runner;
+    if (this.laneElapsed < runner.laneChangeTime) {
+      this.laneElapsed = Math.min(runner.laneChangeTime, this.laneElapsed + dt);
+      const progress = this.laneElapsed / runner.laneChangeTime;
+      const eased = progress * progress * (3 - 2 * progress);
+      this.lateral = this.laneFrom + (this.laneTarget - this.laneFrom) * eased;
+    }
+
+    if (this.edgeBounceElapsed < runner.edgeBounceTime) {
+      this.edgeBounceElapsed = Math.min(runner.edgeBounceTime, this.edgeBounceElapsed + dt);
+      const progress = this.edgeBounceElapsed / runner.edgeBounceTime;
+      this.lateral = this.config.laneOffsets[this.laneIndex]
+        + Math.sin(progress * Math.PI) * runner.edgeBounceDistance * this.edgeBounceDirection;
+    }
+
+    if (this.state === RUNNER_STATES.JUMP) {
+      this.jumpElapsed += dt;
+      if (this.jumpElapsed < runner.jumpRiseTime) {
+        const riseGravity = (2 * runner.jumpHeight) / (runner.jumpRiseTime * runner.jumpRiseTime);
+        const takeoffVelocity = riseGravity * runner.jumpRiseTime;
+        this.verticalOffset = takeoffVelocity * this.jumpElapsed - 0.5 * riseGravity * this.jumpElapsed * this.jumpElapsed;
+      } else {
+        const fallElapsed = this.jumpElapsed - runner.jumpRiseTime;
+        if (fallElapsed >= runner.jumpFallTime - Number.EPSILON) {
+          this.state = RUNNER_STATES.RUN;
+          this.verticalOffset = 0;
+        } else {
+          const fallGravity = (2 * runner.jumpHeight) / (runner.jumpFallTime * runner.jumpFallTime);
+          this.verticalOffset = runner.jumpHeight - 0.5 * fallGravity * fallElapsed * fallElapsed;
+        }
+      }
+    } else if (this.state === RUNNER_STATES.SLIDE) {
+      this.slideElapsed += dt;
+      if (this.slideElapsed >= runner.slideTime - Number.EPSILON) {
+        this.state = RUNNER_STATES.RUN;
+        this.collisionHeight = runner.runCollisionHeight;
+        this.root.scale.y = 1;
+      }
+    }
+
+    if (this.state === RUNNER_STATES.RUN && this.jumpBufferRemaining > 0) {
+      this.jumpBufferRemaining = Math.max(0, this.jumpBufferRemaining - dt);
+      if (this.jumpBufferRemaining > 0) {
+        this._startJump();
+      }
+    }
   }
 }

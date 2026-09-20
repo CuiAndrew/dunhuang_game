@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { PALETTE } from './art/Palette.js';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
+import { Input } from './core/Input.js';
 import { FixedStepLoop } from './core/Loop.js';
 import { CameraRig } from './entities/CameraRig.js';
 import { Runner } from './entities/Runner.js';
@@ -69,6 +70,23 @@ try {
   cameraRig.snapTo(runner);
 
   const gameState = new GameState();
+  const input = new Input({
+    target: window,
+    config: CONFIG,
+    onAction: (action) => {
+      if (action === 'PAUSE') {
+        if (gameState.current === GAME_STATES.PLAYING) {
+          gameState.transition(GAME_STATES.PAUSED);
+        } else if (gameState.current === GAME_STATES.PAUSED) {
+          gameState.transition(GAME_STATES.PLAYING);
+        }
+        return;
+      }
+      if (gameState.current === GAME_STATES.PLAYING) {
+        runner.handleAction(action);
+      }
+    },
+  });
   function resize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -78,6 +96,7 @@ try {
   }
 
   function update(dt) {
+    input.update(dt);
     if (gameState.current === GAME_STATES.PLAYING) {
       runner.update(dt);
     } else {
@@ -121,6 +140,7 @@ try {
   });
 
   window.addEventListener('resize', resize);
+  input.attach();
   resize();
   gameState.transition(GAME_STATES.MENU);
   loop.start();
