@@ -34,3 +34,12 @@ test('feasibility research and delivery plan are checked in', () => {
   assert.match(plan, /交付路线/);
   assert.match(plan, /npm test/);
 });
+
+test('sixteen-point acceptance record is checked in', () => {
+  const acceptancePath = new URL('../docs/验收记录.md', import.meta.url);
+  assert.equal(existsSync(acceptancePath), true);
+  const acceptance = readFileSync(acceptancePath, 'utf8');
+  assert.equal((acceptance.match(/^\|\s*\d+\s*\|/gm) ?? []).length, 16);
+  assert.match(acceptance, /5 分钟/);
+  assert.match(acceptance, /真实设备 FPS/);
+});
