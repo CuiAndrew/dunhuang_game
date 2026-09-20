@@ -21,4 +21,5 @@ test('presentation modules keep procedural effects and native accessibility hook
   assert.equal(typeof hud.Hud, 'function');
   assert.equal(typeof screens.Screens, 'function');
   assert.equal(typeof props.createObstacleVisual, 'function');
+  assert.match(await import('../src/ui/Screens.js').then(() => readFileSync(new URL('../src/ui/Screens.js', import.meta.url), 'utf8')), /\.onclick/);
 });
