@@ -11,6 +11,7 @@ test('presentation layer exposes the HUD and screen contracts without external a
   assert.match(html, /id="pause-button"/);
   assert.match(html, /id="mute-button"/);
   assert.match(html, /conic-gradient/);
+  assert.match(html, /height:\s*100%/);
   assert.doesNotMatch(html, /\.(png|jpe?g|glb|gltf|fbx|mp3|woff2?)\b/i);
 });
 
