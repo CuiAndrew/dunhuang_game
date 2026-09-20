@@ -1,5 +1,5 @@
 // Evaluates deterministic track-space obstacle collisions with deliberate player-friendly tolerances.
-const JUMP_TYPES = new Set(['LOW_BARRIER', 'FIRE']);
+const JUMP_TYPES = new Set(['LOW_BARRIER', 'FIRE', 'GAP']);
 
 export function isObstacleHit(runner, obstacle, config) {
   const collision = config.collision;

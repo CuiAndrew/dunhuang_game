@@ -126,6 +126,8 @@ export class ObstacleSpawner {
       obstacle.lane = group.occupiedLanes[index];
       obstacle.groupId = group.id;
       obstacle.type = this._pickType();
+      obstacle.height = obstacle.type === 'GAP' ? 0.9 : (obstacle.type === 'PILLAR' ? 3.2 : (obstacle.type === 'BEAM' ? 1.25 : 0.8));
+      obstacle.depth = obstacle.type === 'GAP' ? 4 : (obstacle.type === 'PILLAR' ? 1.4 : (obstacle.type === 'BEAM' ? 0.4 : 0.7));
       obstacle.resolved = false;
       obstacle.visual?.setType?.(obstacle.type);
     }

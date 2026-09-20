@@ -30,6 +30,21 @@ test('ObstacleSpawner never fills all three lanes in a physical obstacle group',
   }
 });
 
+test('obstacle catalogue includes a traversable GAP hazard with jump semantics', async () => {
+  const spawnerModule = await import('../src/world/ObstacleSpawner.js');
+  const collisionModule = await import('../src/systems/Collision.js');
+  assert.equal(CONFIG.spawn.obstacleTypes.includes('GAP'), true);
+  const spawner = new spawnerModule.ObstacleSpawner({ config: CONFIG, random: () => 0.99, createVisual: () => null });
+  spawner.ensureAhead(0, 40, 0);
+  const gap = spawner.getObstacleAt(0);
+  gap.type = 'GAP';
+  gap.height = 0.9;
+  gap.depth = 4;
+  const runner = { s: gap.s, lateral: CONFIG.laneOffsets[gap.lane], verticalOffset: 0, collisionHeight: CONFIG.runner.runCollisionHeight };
+  assert.equal(collisionModule.isObstacleHit(runner, gap, CONFIG), true);
+  assert.equal(collisionModule.isObstacleHit({ ...runner, verticalOffset: 1.2 }, gap, CONFIG), false);
+});
+
 test('collision action rules forgive near misses but demand jump, slide or lane change as appropriate', async () => {
   const module = await loadModule('../src/systems/Collision.js');
   assert.ok(module, 'Collision module must exist');

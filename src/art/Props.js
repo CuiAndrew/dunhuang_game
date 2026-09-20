@@ -21,6 +21,10 @@ export function createObstacleVisual(THREE, palette, config) {
       mesh.scale.set(1.6, 1.1, 1.6);
       mesh.userData.heightOffset = 0.55;
       mesh.material.color.setHex(palette.cinnabar);
+    } else if (type === 'GAP') {
+      mesh.scale.set(2.6, 0.05, 2.4);
+      mesh.userData.heightOffset = 0.03;
+      mesh.material.color.setHex(palette.ink);
     } else {
       mesh.scale.set(2.2, 0.8, 0.7);
       mesh.userData.heightOffset = 0.4;

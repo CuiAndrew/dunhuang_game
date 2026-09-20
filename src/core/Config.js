@@ -113,7 +113,7 @@ export const CONFIG = Object.freeze({
     obstacleGapVariance: 8,
     obstaclePoolSize: 256,
     obstacleGroupPoolSize: 128,
-    obstacleTypes: ['LOW_BARRIER', 'BEAM', 'PILLAR', 'FIRE'],
+    obstacleTypes: ['LOW_BARRIER', 'BEAM', 'PILLAR', 'FIRE', 'GAP'],
     coinGroupGapVariance: 14,
     coinArcProbability: 0.2,
     coinPoolSize: 512,
