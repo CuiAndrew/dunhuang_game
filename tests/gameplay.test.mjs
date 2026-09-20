@@ -95,6 +95,18 @@ test('Score totals distance and coins then persists only a new high score', asyn
   assert.deepEqual(writes, [[CONFIG.score.highScoreStorageKey, '45']]);
 });
 
+test('Score keeps gameplay alive when localStorage is blocked', async () => {
+  const module = await import('../src/systems/Score.js');
+  const blockedStorage = {
+    getItem: () => { throw new Error('blocked'); },
+    setItem: () => { throw new Error('blocked'); },
+  };
+  const score = new module.Score({ config: CONFIG, storage: blockedStorage });
+  score.updateDistance(12);
+  score.commitHighScore();
+  assert.equal(score.distance, 12);
+});
+
 test('spawners reset their cursors and active records for a clean restart', async () => {
   const { ObstacleSpawner } = await import('../src/world/ObstacleSpawner.js');
   const { PickupSpawner } = await import('../src/world/PickupSpawner.js');

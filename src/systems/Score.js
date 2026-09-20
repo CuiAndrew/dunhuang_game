@@ -28,7 +28,11 @@ export class Score {
 
   commitHighScore() {
     if (this.highScore > this.persistedHighScore) {
-      this.storage?.setItem(this.config.score.highScoreStorageKey, String(this.highScore));
+      try {
+        this.storage?.setItem(this.config.score.highScoreStorageKey, String(this.highScore));
+      } catch {
+        // Private browsing can reject writes; keep the score in memory for this run.
+      }
       this.persistedHighScore = this.highScore;
     }
   }
@@ -39,7 +43,13 @@ export class Score {
   }
 
   _readHighScore() {
-    const saved = Number.parseInt(this.storage?.getItem(this.config.score.highScoreStorageKey) ?? '0', 10);
+    let stored = '0';
+    try {
+      stored = this.storage?.getItem(this.config.score.highScoreStorageKey) ?? '0';
+    } catch {
+      stored = '0';
+    }
+    const saved = Number.parseInt(stored, 10);
     return Number.isFinite(saved) ? saved : 0;
   }
 }
