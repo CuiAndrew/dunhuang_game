@@ -112,8 +112,16 @@ export class ObstacleSpawner {
     group.laneCount = 0;
     this.groupSerial += 1;
 
-    while (group.laneCount < requestedLaneCount) {
+    let attempts = 0;
+    while (group.laneCount < requestedLaneCount && attempts < 12) {
       const lane = Math.floor(this.random() * this.config.laneOffsets.length);
+      if (!this._groupContainsLane(group, lane)) {
+        group.occupiedLanes[group.laneCount] = lane;
+        group.laneCount += 1;
+      }
+      attempts += 1;
+    }
+    for (let lane = 0; group.laneCount < requestedLaneCount && lane < this.config.laneOffsets.length; lane += 1) {
       if (!this._groupContainsLane(group, lane)) {
         group.occupiedLanes[group.laneCount] = lane;
         group.laneCount += 1;

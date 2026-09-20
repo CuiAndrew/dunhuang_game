@@ -45,6 +45,14 @@ test('obstacle catalogue includes a traversable GAP hazard with jump semantics',
   assert.equal(collisionModule.isObstacleHit({ ...runner, verticalOffset: 1.2 }, gap, CONFIG), false);
 });
 
+test('ObstacleSpawner terminates with a constant random source while selecting two lanes', async () => {
+  const { ObstacleSpawner } = await import('../src/world/ObstacleSpawner.js');
+  const spawner = new ObstacleSpawner({ config: CONFIG, random: () => 0.8, createVisual: () => null });
+  spawner.ensureAhead(0, 80, 1);
+  const group = spawner.getGroupSnapshots().find((item) => item.occupiedLanes.length === 2);
+  assert.ok(group);
+});
+
 test('collision action rules forgive near misses but demand jump, slide or lane change as appropriate', async () => {
   const module = await loadModule('../src/systems/Collision.js');
   assert.ok(module, 'Collision module must exist');
