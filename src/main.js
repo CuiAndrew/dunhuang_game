@@ -16,6 +16,7 @@ import { Hud } from './ui/Hud.js';
 import { Screens } from './ui/Screens.js';
 import { CollisionSystem } from './systems/Collision.js';
 import { PowerUp } from './systems/PowerUp.js';
+import { PerformanceBudget } from './systems/Performance.js';
 import { Score } from './systems/Score.js';
 import { PickupSpawner } from './world/PickupSpawner.js';
 import { ObstacleSpawner } from './world/ObstacleSpawner.js';
@@ -90,6 +91,7 @@ try {
   cameraRig.snapTo(runner);
 
   const gameState = new GameState();
+  const performanceBudget = new PerformanceBudget({ config: CONFIG });
   const score = new Score({ config: CONFIG });
   const sfx = new Sfx({ config: CONFIG });
   const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: PALETTE });
@@ -244,7 +246,13 @@ try {
     keyLight.target.updateMatrixWorld();
   }
 
-  function render() {
+  function render(_, frameDelta) {
+    if (performanceBudget.update(frameDelta)) {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, performanceBudget.pixelRatioCap));
+      renderer.shadowMap.enabled = performanceBudget.shadowsEnabled;
+      keyLight.castShadow = performanceBudget.shadowsEnabled;
+      resize();
+    }
     renderer.render(scene, camera);
   }
 

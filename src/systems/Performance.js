@@ -1,0 +1,32 @@
+// Tracks sustained frame pressure and exposes small, deterministic quality steps for the renderer.
+export class PerformanceBudget {
+  constructor({ config }) {
+    this.config = config;
+    this.level = 0;
+    this.lowFrameSeconds = 0;
+  }
+
+  update(frameDelta) {
+    if (frameDelta <= 0) return false;
+    const fps = 1 / frameDelta;
+    if (fps < this.config.render.lowFpsThreshold) {
+      this.lowFrameSeconds += frameDelta;
+    } else {
+      this.lowFrameSeconds = Math.max(0, this.lowFrameSeconds - frameDelta * 0.5);
+    }
+    if (this.lowFrameSeconds < this.config.render.lowFpsDuration || this.level >= this.config.render.qualityPixelRatios.length - 1) {
+      return false;
+    }
+    this.level += 1;
+    this.lowFrameSeconds = 0;
+    return true;
+  }
+
+  get pixelRatioCap() {
+    return this.config.render.qualityPixelRatios[this.level];
+  }
+
+  get shadowsEnabled() {
+    return this.level === 0;
+  }
+}

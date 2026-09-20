@@ -165,6 +165,9 @@ export const CONFIG = Object.freeze({
   },
   render: {
     maxPixelRatio: 2,
+    lowFpsThreshold: 45,
+    lowFpsDuration: 3,
+    qualityPixelRatios: [2, 1.5, 1],
   },
   art: {
     textureSize: 256,

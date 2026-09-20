@@ -47,6 +47,6 @@ export class FixedStepLoop {
       }
     }
 
-    this.render(this.accumulator / this.fixedDt);
+    this.render(this.accumulator / this.fixedDt, delta);
   }
 }
