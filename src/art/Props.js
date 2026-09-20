@@ -67,6 +67,12 @@ export function createPickupVisual(THREE, palette, type = 'COIN') {
   mesh.rotation.x = Math.PI / 2;
   mesh.visible = false;
   mesh.userData.kind = type;
+  mesh.setType = (nextType) => {
+    const nextColor = nextType === 'SHIELD' ? palette.stoneBlue : palette.cinnabar;
+    mesh.userData.kind = nextType;
+    mesh.material.color.setHex(nextColor);
+    mesh.material.emissive.setHex(nextColor);
+  };
   return mesh;
 }
 

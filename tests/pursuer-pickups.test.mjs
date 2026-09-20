@@ -65,6 +65,22 @@ test('PickupSpawner occasionally lays coins across an arc of lanes', async () =>
   assert.equal(lanes.size >= 3, true);
 });
 
+test('PickupSpawner prewarms pickup visuals before the update loop', async () => {
+  const module = await loadModule('../src/world/PickupSpawner.js');
+  let coinVisuals = 0;
+  let powerVisuals = 0;
+  const spawner = new module.PickupSpawner({
+    config: CONFIG,
+    createCoinVisual: () => { coinVisuals += 1; return { visible: false }; },
+    createPowerUpVisual: () => { powerVisuals += 1; return { visible: false }; },
+  });
+  assert.equal(coinVisuals, CONFIG.spawn.coinPoolSize);
+  assert.equal(powerVisuals, CONFIG.spawn.powerUpPoolSize);
+  const warmed = coinVisuals + powerVisuals;
+  spawner.ensureAhead(0, 300);
+  assert.equal(coinVisuals + powerVisuals, warmed);
+});
+
 test('PowerUp tracks independent timers, one-shot shield and non-stacking boost reset', async () => {
   const module = await loadModule('../src/systems/PowerUp.js');
   assert.ok(module, 'PowerUp module must exist');

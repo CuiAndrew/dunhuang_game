@@ -10,10 +10,10 @@ export class PickupSpawner {
     this.freeCoins = [];
     this.freePowerUps = [];
     for (let index = 0; index < config.spawn.coinPoolSize; index += 1) {
-      this.freeCoins.push({ s: 0, lane: 0, collected: false, visual: null });
+      this.freeCoins.push({ s: 0, lane: 0, collected: false, visual: createCoinVisual() });
     }
     for (let index = 0; index < config.spawn.powerUpPoolSize; index += 1) {
-      this.freePowerUps.push({ s: 0, lane: 0, type: 'MAGNET', collected: false, visual: null });
+      this.freePowerUps.push({ s: 0, lane: 0, type: 'MAGNET', collected: false, visual: createPowerUpVisual('MAGNET') });
     }
     this.nextCoinS = config.spawn.coinGroupGapMin;
     this.nextPowerUpS = config.powerUp.pickupGapMin;
@@ -29,7 +29,6 @@ export class PickupSpawner {
         powerUp.lane = Math.floor(this.random() * this.config.laneOffsets.length);
         powerUp.type = this._pickPowerUp();
         powerUp.collected = false;
-        if (!powerUp.visual) powerUp.visual = this.createPowerUpVisual(powerUp.type);
         powerUp.visual?.setType?.(powerUp.type);
         if (powerUp.visual) powerUp.visual.visible = true;
       }
@@ -116,7 +115,6 @@ export class PickupSpawner {
       coin.s = this.nextCoinS + index * spawn.coinSpacing;
       coin.lane = isArc ? arcPattern[index % arcPattern.length] : lane;
       coin.collected = false;
-      if (!coin.visual) coin.visual = this.createCoinVisual();
       if (coin.visual) coin.visual.visible = true;
     }
     this.nextCoinS += count * spawn.coinSpacing + spawn.coinGroupGapMin
