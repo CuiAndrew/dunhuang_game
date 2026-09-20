@@ -58,3 +58,18 @@ test('PowerUp tracks independent timers, one-shot shield and non-stacking boost 
   powerUp.update(CONFIG.powerUp.boostDuration);
   assert.equal(powerUp.boostRemaining, 0);
 });
+
+test('ChunkPool recycles decoration records without growing active storage', async () => {
+  const module = await import('../src/world/ChunkPool.js');
+  const pool = new module.ChunkPool({ size: 2, create: () => ({ visible: false }) });
+  const first = pool.acquire(10, 'dune');
+  pool.acquire(20, 'lantern');
+  assert.equal(pool.activeCount(), 2);
+  assert.equal(pool.acquire(30), null);
+  pool.recycleBefore(15, (slot) => { slot.item.visible = false; });
+  assert.equal(pool.activeCount(), 1);
+  assert.equal(pool.freeCount(), 1);
+  const reused = pool.acquire(40, 'dune');
+  assert.equal(reused.item.visible, false);
+  assert.equal(first.active, true);
+});
