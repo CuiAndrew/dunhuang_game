@@ -109,6 +109,18 @@ export const CONFIG = Object.freeze({
     obstacleGapShrinkPerMeter: 0.006,
     powerUpGapMin: 120,
     powerUpGapMax: 260,
+    obstacleStartDistance: 32,
+    obstacleGapVariance: 8,
+    obstaclePoolSize: 256,
+    obstacleGroupPoolSize: 128,
+    obstacleTypes: ['LOW_BARRIER', 'BEAM', 'PILLAR', 'FIRE'],
+  },
+  collision: {
+    laneHalfWidth: 1.35,
+    forgivingMultiplier: 0.8,
+    jumpClearance: 0.15,
+    slideClearance: 0.9,
+    runnerDepth: 0.55,
   },
   camera: {
     offsetBack: 7,
@@ -125,6 +137,7 @@ export const CONFIG = Object.freeze({
   score: {
     coinValue: 10,
     distanceValue: 1,
+    highScoreStorageKey: 'dunhuang-run-high-score',
   },
   scene: {
     fogNear: 60,
