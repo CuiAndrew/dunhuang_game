@@ -1,0 +1,64 @@
+<svg width="100%" viewBox="0 0 680 544" xmlns="http://www.w3.org/2000/svg" role="img" font-family="system-ui, -apple-system, 'PingFang SC', sans-serif">
+<title>《敦煌逃亡》代码架构分层</title>
+<desc>四层结构：核心层、世界层、实体层、系统与表现层，共 16 个模块。</desc>
+
+<rect x="40" y="40" width="600" height="106" rx="16" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="56" y="62" fill="#5F5E5A" font-size="13" font-weight="500" dominant-baseline="central">核心层　core</text>
+<rect x="56" y="74" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="122.5" y="95" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">数值配置</text>
+<text x="122.5" y="113" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Config.js</text>
+<rect x="201" y="74" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="267.5" y="95" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">状态机</text>
+<text x="267.5" y="113" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">GameState.js</text>
+<rect x="346" y="74" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="412.5" y="95" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">统一输入</text>
+<text x="412.5" y="113" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Input.js</text>
+<rect x="491" y="74" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="557.5" y="95" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">主循环</text>
+<text x="557.5" y="113" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Loop.js</text>
+
+<rect x="40" y="166" width="600" height="106" rx="16" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="56" y="188" fill="#5F5E5A" font-size="13" font-weight="500" dominant-baseline="central">世界层　world</text>
+<rect x="56" y="200" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="122.5" y="221" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">轨道骨架</text>
+<text x="122.5" y="239" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">TrackGraph.js</text>
+<rect x="201" y="200" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="267.5" y="221" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">路面铺设</text>
+<text x="267.5" y="239" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">TrackMesh.js</text>
+<rect x="346" y="200" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="412.5" y="221" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">装饰对象池</text>
+<text x="412.5" y="239" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">ChunkPool.js</text>
+<rect x="491" y="200" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="557.5" y="221" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">生成器</text>
+<text x="557.5" y="239" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Spawner.js</text>
+
+<rect x="40" y="292" width="600" height="106" rx="16" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="56" y="314" fill="#5F5E5A" font-size="13" font-weight="500" dominant-baseline="central">实体层　entities</text>
+<rect x="56" y="326" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="122.5" y="347" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">玩家角色</text>
+<text x="122.5" y="365" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Runner.js</text>
+<rect x="201" y="326" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="267.5" y="347" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">追兵石兽</text>
+<text x="267.5" y="365" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Pursuer.js</text>
+<rect x="346" y="326" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="412.5" y="347" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">摄像机</text>
+<text x="412.5" y="365" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">CameraRig.js</text>
+<rect x="491" y="326" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="557.5" y="347" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">粒子特效</text>
+<text x="557.5" y="365" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Fx.js</text>
+
+<rect x="40" y="418" width="600" height="106" rx="16" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text x="56" y="440" fill="#5F5E5A" font-size="13" font-weight="500" dominant-baseline="central">系统与表现层　systems + ui</text>
+<rect x="56" y="452" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="122.5" y="473" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">碰撞判定</text>
+<text x="122.5" y="491" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Collision.js</text>
+<rect x="201" y="452" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="267.5" y="473" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">道具效果</text>
+<text x="267.5" y="491" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">PowerUp.js</text>
+<rect x="346" y="452" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="412.5" y="473" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">计分存档</text>
+<text x="412.5" y="491" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Score.js</text>
+<rect x="491" y="452" width="133" height="56" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text x="557.5" y="473" fill="#633806" font-size="14" font-weight="500" text-anchor="middle" dominant-baseline="central">界面</text>
+<text x="557.5" y="491" fill="#854F0B" font-size="12" text-anchor="middle" dominant-baseline="central">Hud + Screens.js</text>
+</svg>
