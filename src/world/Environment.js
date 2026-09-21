@@ -9,6 +9,7 @@ export class EnvironmentSystem {
     this.track = track;
     this.random = random;
     this.createVisual = createVisual;
+    this.density = 1;
     this.pool = new ChunkPool({ size: config.art.decorationPoolSize, create: () => ({ visual: createVisual() }) });
     this.nextS = config.scene.roadStart;
     const vector = (x, y, z) => ({ x, y, z, set(nx, ny, nz) { this.x = nx; this.y = ny; this.z = nz; } });
@@ -19,7 +20,7 @@ export class EnvironmentSystem {
     const target = playerS + distanceAhead;
     while (this.nextS < target) {
       const kind = KINDS[Math.floor(this.random() * KINDS.length)];
-      const slot = this.pool.acquire(this.nextS, kind);
+      const slot = this.random() <= this.density ? this.pool.acquire(this.nextS, kind) : null;
       if (slot) {
         slot.item.visual.visible = true;
         slot.item.visual.setKind?.(kind);
@@ -36,6 +37,10 @@ export class EnvironmentSystem {
   reset() {
     this.pool.reset((slot) => { slot.item.visual.visible = false; });
     this.nextS = this.config.scene.roadStart;
+  }
+
+  setDensity(value) {
+    this.density = Math.max(0, Math.min(1, value));
   }
 
   update(playerS, distanceAhead) {

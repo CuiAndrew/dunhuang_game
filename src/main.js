@@ -61,6 +61,7 @@ try {
 
   const keyLight = new THREE.DirectionalLight(PALETTE.dunhuangGold, CONFIG.scene.keyLightIntensity);
   keyLight.position.fromArray(CONFIG.scene.keyLightPosition);
+  keyLight.shadow.mapSize.set(CONFIG.render.shadowMapSizes[0], CONFIG.render.shadowMapSizes[0]);
   keyLight.castShadow = true;
   scene.add(keyLight);
 
@@ -284,6 +285,10 @@ try {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, performanceBudget.pixelRatioCap));
       renderer.shadowMap.enabled = performanceBudget.shadowsEnabled;
       keyLight.castShadow = performanceBudget.shadowsEnabled;
+      environment.setDensity(performanceBudget.decorationDensity);
+      if (performanceBudget.shadowMapSize > 0) {
+        keyLight.shadow.mapSize.set(performanceBudget.shadowMapSize, performanceBudget.shadowMapSize);
+      }
       resize();
     }
     renderer.render(scene, camera);

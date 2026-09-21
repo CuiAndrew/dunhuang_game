@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "dependencies": {
+  "devDependencies": {
     "three": "^0.169.0"
   }
 }

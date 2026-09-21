@@ -173,6 +173,8 @@ export const CONFIG = Object.freeze({
     lowFpsThreshold: 45,
     lowFpsDuration: 3,
     qualityPixelRatios: [2, 1.5, 1],
+    shadowMapSizes: [1024, 512, 0],
+    decorationDensities: [1, 0.7, 0.4],
   },
   art: {
     textureSize: 256,

@@ -3,6 +3,8 @@ export class PerformanceBudget {
   constructor({ config }) {
     this.config = config;
     this.qualityPixelRatios = config.render.qualityPixelRatios ?? [config.render.maxPixelRatio, 1];
+    this.shadowMapSizes = config.render.shadowMapSizes ?? [1024, 512, 0];
+    this.decorationDensities = config.render.decorationDensities ?? [1, 0.7, 0.4];
     this.level = 0;
     this.lowFrameSeconds = 0;
   }
@@ -28,6 +30,14 @@ export class PerformanceBudget {
   }
 
   get shadowsEnabled() {
-    return this.level === 0;
+    return this.shadowMapSize > 0;
+  }
+
+  get shadowMapSize() {
+    return this.shadowMapSizes[Math.min(this.level, this.shadowMapSizes.length - 1)] ?? 0;
+  }
+
+  get decorationDensity() {
+    return this.decorationDensities[Math.min(this.level, this.decorationDensities.length - 1)] ?? 0;
   }
 }

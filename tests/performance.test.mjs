@@ -6,11 +6,19 @@ import { PerformanceBudget } from '../src/systems/Performance.js';
 test('PerformanceBudget degrades only after sustained low frame rate', () => {
   const budget = new PerformanceBudget({ config: CONFIG });
   assert.equal(budget.pixelRatioCap, 2);
+  assert.equal(budget.shadowMapSize, 1024);
+  assert.equal(budget.decorationDensity, 1);
   assert.equal(budget.update(1 / 60), false);
   assert.equal(budget.update(CONFIG.render.lowFpsDuration - 0.1), false);
   assert.equal(budget.update(0.11), true);
   assert.equal(budget.pixelRatioCap, 1.5);
+  assert.equal(budget.shadowsEnabled, true);
+  assert.equal(budget.shadowMapSize, 512);
+  assert.equal(budget.decorationDensity, 0.7);
+  assert.equal(budget.update(CONFIG.render.lowFpsDuration + 0.01), true);
   assert.equal(budget.shadowsEnabled, false);
+  assert.equal(budget.shadowMapSize, 0);
+  assert.equal(budget.decorationDensity, 0.4);
 });
 
 test('PerformanceBudget tolerates older render configs without quality steps', () => {
