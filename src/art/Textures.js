@@ -1,7 +1,7 @@
 // Creates and caches all CanvasTexture artwork so repeated meshes share one procedural texture instance.
 const textureCache = new Map();
 
-export function createTextureSet(THREE, doc = document, palette) {
+export function createTextureSet(THREE, doc = document, palette, themeId = 'dunhuang') {
   const size = 256;
   const colors = palette ?? {
     plaster: 0xF0E2C8,
@@ -14,8 +14,9 @@ export function createTextureSet(THREE, doc = document, palette) {
   };
   const css = (value) => `#${value.toString(16).padStart(6, '0')}`;
   const make = (name, draw) => {
-    if (textureCache.has(name)) {
-      return textureCache.get(name);
+    const cacheKey = `${themeId}:${name}`;
+    if (textureCache.has(cacheKey)) {
+      return textureCache.get(cacheKey);
     }
     const canvas = doc.createElement('canvas');
     canvas.width = size;
@@ -26,7 +27,7 @@ export function createTextureSet(THREE, doc = document, palette) {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.generateMipmaps = true;
-    textureCache.set(name, texture);
+    textureCache.set(cacheKey, texture);
     return texture;
   };
   const stone = make('stone', (ctx) => {

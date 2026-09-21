@@ -3,12 +3,15 @@ import test from 'node:test';
 
 test('theme registry exposes a validated Dunhuang theme and safe fallback', async () => {
   const { getTheme, listThemeIds } = await import('../src/art/ThemeRegistry.js');
+  const { PALETTE } = await import('../src/art/Palette.js');
   const theme = getTheme();
   const fallback = getTheme('does-not-exist');
 
   assert.equal(theme.id, 'dunhuang');
   assert.equal(fallback, theme);
   assert.deepEqual(listThemeIds(), ['dunhuang']);
+  assert.equal(theme.scene.backgroundColor, PALETTE.nightTeal);
+  assert.equal(theme.scene.fogColor, PALETTE.nightTeal);
   for (const name of [
     'createTextures', 'createRunnerVisual', 'createPursuerVisual',
     'createObstacleVisual', 'createPickupVisual', 'createEnvironmentVisual',

@@ -1,6 +1,34 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+const PALETTE = Object.freeze({
+  plaster: 0xF0E2C8,
+  sand: 0xE3C68B,
+  ochreRed: 0xA63B29,
+  stoneGreen: 0x3E7C59,
+  stoneBlue: 0x2E5C8A,
+  dunhuangGold: 0xE8B23A,
+  cinnabar: 0xC8402F,
+});
+
+function createCanvasContext() {
+  return {
+    createLinearGradient: () => ({ addColorStop() {} }),
+    fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
+    arc() {}, ellipse() {}, fill() {},
+  };
+}
+
+const TEST_DOCUMENT = {
+  createElement: () => ({ getContext: () => createCanvasContext() }),
+};
+
+const TEST_THREE = {
+  CanvasTexture: class CanvasTexture { constructor(canvas) { this.canvas = canvas; } },
+  SRGBColorSpace: 'srgb',
+  RepeatWrapping: 'repeat',
+};
+
 test('art and audio modules expose procedural-only factories', async () => {
   const textures = await import('../src/art/Textures.js');
   const fx = await import('../src/art/Fx.js');
@@ -17,6 +45,16 @@ test('art and audio modules expose procedural-only factories', async () => {
   assert.equal(typeof props.createPursuerVisual, 'function');
   assert.equal(typeof props.createPickupVisual, 'function');
   assert.equal(typeof props.createEnvironmentVisual, 'function');
+});
+
+test('texture cache is isolated by theme id but reuses same-theme textures', async () => {
+  const { createTextureSet } = await import('../src/art/Textures.js');
+  const dunhuangA = createTextureSet(TEST_THREE, TEST_DOCUMENT, PALETTE, 'dunhuang');
+  const dunhuangB = createTextureSet(TEST_THREE, TEST_DOCUMENT, PALETTE, 'dunhuang');
+  const shanghai = createTextureSet(TEST_THREE, TEST_DOCUMENT, PALETTE, 'shanghai-bund');
+
+  assert.equal(dunhuangA.sky, dunhuangB.sky);
+  assert.notEqual(dunhuangA.sky, shanghai.sky);
 });
 
 test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
