@@ -51,4 +51,14 @@ test('theme contract validates palette and scene token fields', async () => {
       && error.message.includes('scene.backgroundColor')
       && error.message.includes('scene.skyTextureName'),
   );
+
+  const { getTheme } = await import('../src/art/ThemeRegistry.js');
+  const invalidSceneType = {
+    ...getTheme(),
+    scene: { ...getTheme().scene, skyTextureName: 42 },
+  };
+  assert.throws(
+    () => assertThemeDefinition(invalidSceneType),
+    (error) => error instanceof Error && error.message.includes('scene.skyTextureName'),
+  );
 });
