@@ -67,6 +67,7 @@ export class Input {
   }
 
   handleTouchStart(event) {
+    if (this._isInteractiveTarget(event.target)) return;
     event.preventDefault();
     const touch = event.touches[0];
     if (!touch) {
@@ -78,6 +79,7 @@ export class Input {
   }
 
   handleTouchEnd(event) {
+    if (this._isInteractiveTarget(event.target)) return;
     event.preventDefault();
     if (!this.touchActive) {
       return;
@@ -90,6 +92,7 @@ export class Input {
   }
 
   handleMouseDown(event) {
+    if (this._isInteractiveTarget(event.target)) return;
     event.preventDefault();
     this.mouseStartX = event.clientX;
     this.mouseStartY = event.clientY;
@@ -97,6 +100,7 @@ export class Input {
   }
 
   handleMouseUp(event) {
+    if (this._isInteractiveTarget(event.target)) return;
     event.preventDefault();
     if (!this.mouseActive) {
       return;
@@ -132,5 +136,9 @@ export class Input {
 
   _emit(action) {
     this.onAction(action);
+  }
+
+  _isInteractiveTarget(target) {
+    return Boolean(target?.closest?.('button, a, input, select, textarea'));
   }
 }

@@ -43,3 +43,27 @@ test('Input emits exactly one semantic action for keyboard, touch and mouse gest
   assert.equal(prevented, 6);
   assert.ok(target.listeners.filter((entry) => entry.type.startsWith('touch') || entry.type.startsWith('mouse')).every((entry) => entry.options.passive === false));
 });
+
+test('Input leaves taps on native controls available for their click handlers', async () => {
+  const module = await loadInput();
+  assert.ok(module, 'Input module must exist');
+  const target = new EventTargetDouble();
+  const actions = [];
+  const input = new module.Input({ target, config: CONFIG, onAction: (action) => actions.push(action) });
+  let prevented = 0;
+  const buttonTarget = { closest: () => ({ tagName: 'BUTTON' }) };
+
+  input.handleTouchStart({
+    target: buttonTarget,
+    touches: [{ clientX: 100, clientY: 100 }],
+    preventDefault: () => { prevented += 1; },
+  });
+  input.handleTouchEnd({
+    target: buttonTarget,
+    changedTouches: [{ clientX: 160, clientY: 100 }],
+    preventDefault: () => { prevented += 1; },
+  });
+
+  assert.deepEqual(actions, []);
+  assert.equal(prevented, 0);
+});
