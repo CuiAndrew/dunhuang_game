@@ -90,5 +90,6 @@ test('main bootstraps the registered theme instead of importing art factories di
   assert.match(main, /art\/ThemeRegistry\.js/);
   assert.match(main, /getTheme\(DEFAULT_THEME_ID\)/);
   assert.match(main, /theme\.createTextures/);
+  assert.match(main, /textures\[theme\.scene\.skyTextureName\]/);
   assert.match(main, /createVisual:\s*theme\.createRunnerVisual/);
 });

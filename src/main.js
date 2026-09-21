@@ -80,9 +80,10 @@ try {
     createVisual: () => theme.createEnvironmentVisual({ THREE, config: CONFIG }),
   });
   environment.forEachVisual((visual) => scene.add(visual));
+  const skyTexture = textures[theme.scene.skyTextureName] ?? textures.sky;
   const sky = new THREE.Mesh(
     new THREE.SphereGeometry(CONFIG.art.skyRadius, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
-    new THREE.MeshBasicMaterial({ map: textures.sky, side: THREE.BackSide }),
+    new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide }),
   );
   scene.add(sky);
 
