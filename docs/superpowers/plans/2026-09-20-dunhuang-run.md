@@ -70,7 +70,7 @@
 - `src/world/TrackGraph.js`：段生成、弧长采样、`evalTrack(s)`、`trackLength()`、`ensureAhead()`、回收窗口。
 - `src/world/TrackMesh.js`：根据采样点构造/更新三角带路面、车道线、栏杆，并处理 GAP 缺口。
 - `src/world/ChunkPool.js`：装饰物对象池和按弧长回收。
-- `src/world/ObstacleSpawner.js`：按难度生成障碍，强制至少保留一条 lane。
+- `src/world/ObstacleSpawner.js`：按难度生成障碍；物理障碍强制至少保留一条 lane，GAP 特殊组占满三道并以跳跃作为通路。
 - `src/world/PickupSpawner.js`：硬币串、弧形串、磁铁/护盾/加速生成与回收。
 
 ### 实体、系统与表现层
@@ -123,7 +123,7 @@
 **Files:** 创建 `src/world/ObstacleSpawner.js`、`src/systems/Collision.js`、`src/systems/Score.js`。
 
 - [ ] 生成低栏、悬梁、立柱、火盆、GAP 五类障碍，按难度权重生成。
-- [ ] 每个横截面随机占 1–2 lane，若占满三 lane 则重抽；验证连续 5 分钟不存在必死组。
+- [ ] 物理障碍每个横截面随机占 1–2 lane，若占满三 lane 则重抽；GAP 特殊组占满三道但必须可由一次跳跃通过；验证连续 5 分钟不存在必死组。
 - [ ] 按规格实现跳/滑/换道容差与 20% 判定收窄。
 - [ ] 撞击时扣追兵距离、降低速度、触发短暂恢复；记录距离和分数。
 - [ ] 验收：五种障碍实际出现且规避动作有效，撞击能进入死亡条件准备状态。
