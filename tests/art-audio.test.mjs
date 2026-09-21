@@ -95,6 +95,11 @@ test('Dunhuang visual factories expose recognizable semantic variants', async ()
   const runner = props.createRunnerVisual(THREE, DUNHUANG_PALETTE, CONFIG);
   assert.ok(runner.root.children.includes(runner.leftLeg));
   assert.ok(runner.root.children.includes(runner.rightLeg));
+  assert.ok(runner.root.getObjectByName('flying-ribbon'));
+  assert.ok(runner.root.getObjectByName('mural-halo'));
+  assert.ok(runner.root.getObjectByName('face-mark'));
+  const coinHole = coin.getObjectByName('coin-hole');
+  assert.ok(coinHole);
 });
 
 test('pooled visual factories share geometry and material resources by theme', async () => {

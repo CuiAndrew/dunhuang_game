@@ -54,59 +54,121 @@ function attachEnvironmentApi(root, names) {
   return root;
 }
 
-export function createRunnerVisual(THREE, palette, config) {
+function color(palette, primary, fallback) {
+  return palette[primary] ?? palette[fallback];
+}
+
+function standardMaterial(THREE, palette, key, fallback, options = {}, texture = null) {
+  const material = new THREE.MeshStandardMaterial({
+    color: color(palette, key, fallback),
+    roughness: 0.72,
+    ...options,
+  });
+  if (texture) {
+    material.map = texture;
+    material.needsUpdate = true;
+  }
+  return material;
+}
+
+function makeRibbon(THREE, material, name) {
+  const ribbon = new THREE.Group();
+  ribbon.name = name;
+  const upper = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.045, 6, 18, Math.PI * 0.72), material);
+  const lower = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.035, 6, 16, Math.PI * 0.68), material);
+  upper.rotation.y = Math.PI * 0.2;
+  upper.rotation.z = Math.PI * 0.18;
+  upper.position.x = 0.12;
+  lower.rotation.y = -Math.PI * 0.18;
+  lower.rotation.z = -Math.PI * 0.22;
+  lower.position.set(0.26, -0.28, 0.02);
+  ribbon.add(upper, lower);
+  return ribbon;
+}
+
+function addFaceMark(THREE, root, palette, runner) {
+  const faceMark = new THREE.Group();
+  faceMark.name = 'face-mark';
+  const eyeMaterial = new THREE.MeshBasicMaterial({ color: color(palette, 'ink', 'bronze') });
+  const eyeGeometry = new THREE.SphereGeometry(0.035, 8, 6);
+  const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+  const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+  leftEye.position.set(-0.11, runner.bodyHeight / 2 + 0.02, runner.headRadius * 0.92);
+  rightEye.position.set(0.11, runner.bodyHeight / 2 + 0.02, runner.headRadius * 0.92);
+  faceMark.add(leftEye, rightEye);
+  root.add(faceMark);
+  return faceMark;
+}
+
+export function createRunnerVisual(THREE, palette, config, textures = {}) {
   const runner = config.runner;
   const root = new THREE.Group();
   root.name = 'runner';
 
-  const robeMaterial = new THREE.MeshStandardMaterial({ color: palette.ochreRed, roughness: 0.65 });
-  const plasterMaterial = new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.8 });
-  const goldMaterial = new THREE.MeshStandardMaterial({ color: palette.dunhuangGold, roughness: 0.55 });
-  const blueMaterial = new THREE.MeshStandardMaterial({ color: palette.stoneBlue, roughness: 0.72 });
+  const robeMaterial = standardMaterial(THREE, palette, 'vermilion', 'ochreRed', { roughness: 0.62 }, textures.mural);
+  const plasterMaterial = standardMaterial(THREE, palette, 'paper', 'plaster', { roughness: 0.82 }, textures.paper);
+  const goldMaterial = standardMaterial(THREE, palette, 'muralGold', 'dunhuangGold', { roughness: 0.48 });
+  const blueMaterial = standardMaterial(THREE, palette, 'muralBlue', 'stoneBlue', { roughness: 0.68 });
+  const turquoiseMaterial = standardMaterial(THREE, palette, 'turquoise', 'stoneGreen', { roughness: 0.62 });
   const body = new THREE.Mesh(
-    new THREE.CapsuleGeometry(runner.capsuleRadius, runner.capsuleLength, runner.capsuleCapSegments, runner.capsuleRadialSegments),
+    new THREE.CapsuleGeometry(runner.capsuleRadius * 1.08, runner.capsuleLength * 0.82, 5, 12),
     robeMaterial,
   );
+  body.name = 'robe-body';
+  body.scale.set(0.86, 1, 0.72);
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(runner.headRadius, runner.capsuleRadialSegments, runner.capsuleCapSegments),
+    new THREE.SphereGeometry(runner.headRadius * 1.1, 16, 12),
     plasterMaterial,
   );
+  head.name = 'mural-face';
   const halo = new THREE.Mesh(
-    new THREE.CircleGeometry(runner.haloRadius, runner.haloSegments),
+    new THREE.TorusGeometry(runner.haloRadius * 0.72, 0.055, 8, 24),
     new THREE.MeshBasicMaterial({
-      color: palette.dunhuangGold,
+      color: color(palette, 'muralGold', 'dunhuangGold'),
       transparent: true,
-      opacity: 0.54,
+      opacity: 0.74,
       side: THREE.DoubleSide,
     }),
   );
-  const belt = new THREE.Mesh(new THREE.BoxGeometry(runner.bodyWidth * 0.92, 0.12, runner.bodyDepth * 1.05), blueMaterial);
-  const sash = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.035, 6, 18), goldMaterial);
-  const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.72, 0.05), goldMaterial);
-  const legGeometry = new THREE.CylinderGeometry(runner.legRadius, runner.legRadius, runner.legLength, runner.capsuleCapSegments);
+  halo.name = 'mural-halo';
+  const belt = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.065, 6, 18), turquoiseMaterial);
+  belt.name = 'turquoise-belt';
+  const sash = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.038, 6, 18), goldMaterial);
+  sash.name = 'gold-sash';
+  const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.72, 0.045), goldMaterial);
+  scarf.name = 'gold-scarf';
+  const ribbon = makeRibbon(THREE, turquoiseMaterial, 'flying-ribbon');
+  const legGeometry = new THREE.CapsuleGeometry(runner.legRadius * 1.18, runner.legLength * 0.68, 4, 8);
   const leftLeg = new THREE.Mesh(legGeometry, blueMaterial);
   const rightLeg = new THREE.Mesh(legGeometry, blueMaterial);
+  leftLeg.name = 'left-leg';
+  rightLeg.name = 'right-leg';
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(runner.shadowRadius, runner.shadowSegments),
-    new THREE.MeshBasicMaterial({ color: palette.ink, transparent: true, opacity: 0.28 }),
+    new THREE.MeshBasicMaterial({ color: color(palette, 'ink', 'bronze'), transparent: true, opacity: 0.28 }),
   );
+  shadow.name = 'runner-shadow';
 
   head.position.set(0, runner.bodyHeight / 2, 0);
-  halo.position.set(0, runner.bodyHeight / 2, runner.bodyDepth);
-  belt.position.y = 0.08;
+  halo.position.set(0, runner.bodyHeight / 2 + 0.03, runner.bodyDepth * 0.72);
+  belt.rotation.x = Math.PI / 2;
+  belt.position.y = 0.02;
   sash.rotation.x = Math.PI / 2;
   sash.position.y = 0.05;
-  scarf.position.set(runner.bodyWidth * 0.38, 0.15, runner.bodyDepth * 0.56);
+  scarf.position.set(runner.bodyWidth * 0.38, 0.15, runner.bodyDepth * 0.58);
   scarf.rotation.z = -0.35;
+  ribbon.position.set(-runner.bodyWidth * 0.5, 0.22, -runner.bodyDepth * 0.12);
+  ribbon.rotation.y = Math.PI * 0.14;
   leftLeg.position.set(-runner.legOffset, -runner.legHipHeight, 0);
   rightLeg.position.set(runner.legOffset, -runner.legHipHeight, 0);
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = -config.scene.runnerBaseHeight + config.track.laneMarkHeight;
-  root.add(shadow, body, head, halo, belt, sash, scarf, leftLeg, rightLeg);
+  root.add(shadow, body, head, halo, belt, sash, scarf, ribbon, leftLeg, rightLeg);
+  addFaceMark(THREE, root, palette, runner);
   return { root, leftLeg, rightLeg };
 }
 
-export function createObstacleVisual(THREE, palette, config) {
+export function createObstacleVisual(THREE, palette, config, textures = {}) {
   const cache = getVisualCache(THREE, palette);
   const variantNames = ['BEAM', 'PILLAR', 'FIRE', 'GAP', 'LOW_BARRIER'];
   if (cache.obstacle) {
@@ -120,11 +182,12 @@ export function createObstacleVisual(THREE, palette, config) {
   root.userData.config = config;
   const variants = new Map();
   const materials = {
-    bronze: new THREE.MeshStandardMaterial({ color: palette.bronze, roughness: 0.78 }),
-    red: new THREE.MeshStandardMaterial({ color: palette.cinnabar, roughness: 0.7 }),
-    gold: new THREE.MeshStandardMaterial({ color: palette.dunhuangGold, roughness: 0.58 }),
-    dark: new THREE.MeshStandardMaterial({ color: palette.ink, roughness: 0.92 }),
-    plaster: new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.82 }),
+    bronze: standardMaterial(THREE, palette, 'muralBlue', 'bronze', { roughness: 0.78 }),
+    red: standardMaterial(THREE, palette, 'vermilion', 'cinnabar', { roughness: 0.64 }, textures.mural),
+    gold: standardMaterial(THREE, palette, 'muralGold', 'dunhuangGold', { roughness: 0.48 }),
+    dark: standardMaterial(THREE, palette, 'ink', 'bronze', { roughness: 0.94 }),
+    plaster: standardMaterial(THREE, palette, 'paper', 'plaster', { roughness: 0.82 }, textures.paper),
+    turquoise: standardMaterial(THREE, palette, 'turquoise', 'stoneGreen', { roughness: 0.64 }),
   };
   const addVariant = (type, children, heightOffset) => {
     const variant = new THREE.Group();
@@ -140,35 +203,55 @@ export function createObstacleVisual(THREE, palette, config) {
   const beamBandGeometry = new THREE.BoxGeometry(0.16, 0.64, 0.52);
   const beamBandLeft = new THREE.Mesh(beamBandGeometry, materials.gold);
   const beamBandRight = new THREE.Mesh(beamBandGeometry, materials.gold);
+  const beamCloudLeft = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.035, 6, 12, Math.PI), materials.gold);
+  const beamCloudRight = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.035, 6, 12, Math.PI), materials.gold);
   beamBandLeft.position.x = -0.98;
   beamBandRight.position.x = 0.98;
-  addVariant('BEAM', [beam, beamBandLeft, beamBandRight], 1.25);
+  beamCloudLeft.name = 'beam-cloud-left';
+  beamCloudRight.name = 'beam-cloud-right';
+  beamCloudLeft.position.set(-1.2, 0.26, 0);
+  beamCloudRight.position.set(1.2, 0.26, 0);
+  beamCloudLeft.rotation.y = Math.PI / 2;
+  beamCloudRight.rotation.y = -Math.PI / 2;
+  addVariant('BEAM', [beam, beamBandLeft, beamBandRight, beamCloudLeft, beamCloudRight], 1.25);
 
-  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.74, 2.9, 8), materials.bronze);
+  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.74, 2.9, 12), materials.bronze);
   const pillarBase = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.22, 1.55), materials.gold);
   const pillarCap = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.2, 1.25), materials.red);
+  const pillarBand = new THREE.Mesh(new THREE.TorusGeometry(0.66, 0.06, 6, 16), materials.turquoise);
   pillarBase.position.y = -1.45;
   pillarCap.position.y = 1.48;
-  addVariant('PILLAR', [pillar, pillarBase, pillarCap], 1.6);
+  pillarBand.rotation.x = Math.PI / 2;
+  pillarBand.position.y = 0.82;
+  addVariant('PILLAR', [pillar, pillarBase, pillarCap, pillarBand], 1.6);
 
-  const fireBase = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.82, 0.28, 8), materials.dark);
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.25, 7), materials.red);
-  const flameCore = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.78, 6), materials.gold);
+  const fireBase = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.82, 0.28, 12), materials.dark);
+  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.25, 9), materials.red);
+  const flameCore = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.78, 8), materials.gold);
+  const fireGlow = new THREE.Mesh(
+    new THREE.SphereGeometry(0.96, 12, 8),
+    new THREE.MeshBasicMaterial({ color: color(palette, 'apricot', 'dunhuangGold'), transparent: true, opacity: 0.1 }),
+  );
+  fireGlow.name = 'fire-glow';
   fireBase.position.y = -0.47;
   flame.position.y = 0.1;
   flameCore.position.set(0, 0.2, 0.06);
-  addVariant('FIRE', [fireBase, flame, flameCore], 0.55);
+  fireGlow.position.y = 0.18;
+  addVariant('FIRE', [fireBase, flame, flameCore, fireGlow], 0.55);
 
   const gap = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.05, 4), materials.dark);
+  const gapDepth = new THREE.Mesh(new THREE.BoxGeometry(2.34, 0.03, 3.78), materials.bronze);
   const gapEdgeGeometry = new THREE.BoxGeometry(0.08, 0.08, 4.05);
   const gapEdgeLeft = new THREE.Mesh(gapEdgeGeometry, materials.gold);
   const gapEdgeRight = new THREE.Mesh(gapEdgeGeometry, materials.gold);
+  gapDepth.position.y = -0.02;
   gapEdgeLeft.position.x = -1.28;
   gapEdgeRight.position.x = 1.28;
-  addVariant('GAP', [gap, gapEdgeLeft, gapEdgeRight], 0.03);
+  addVariant('GAP', [gap, gapDepth, gapEdgeLeft, gapEdgeRight], 0.03);
 
   const barrier = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.62, 0.7), materials.plaster);
   const barrierTop = new THREE.Mesh(new THREE.BoxGeometry(2.28, 0.1, 0.76), materials.red);
+  const barrierBand = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.035, 6, 12, Math.PI), materials.gold);
   const barrierLegGeometry = new THREE.BoxGeometry(0.14, 0.9, 0.78);
   const barrierLegLeft = new THREE.Mesh(barrierLegGeometry, materials.bronze);
   const barrierLegRight = new THREE.Mesh(barrierLegGeometry, materials.bronze);
@@ -176,7 +259,9 @@ export function createObstacleVisual(THREE, palette, config) {
   barrierTop.position.y = 0.53;
   barrierLegLeft.position.set(-0.88, -0.22, 0);
   barrierLegRight.position.set(0.88, -0.22, 0);
-  addVariant('LOW_BARRIER', [barrier, barrierTop, barrierLegLeft, barrierLegRight], 0.4);
+  barrierBand.position.set(0, 0.54, 0.38);
+  barrierBand.rotation.x = Math.PI / 2;
+  addVariant('LOW_BARRIER', [barrier, barrierTop, barrierLegLeft, barrierLegRight, barrierBand], 0.4);
 
   attachObstacleApi(root, variantNames, config);
   root.setType('LOW_BARRIER');
@@ -185,18 +270,22 @@ export function createObstacleVisual(THREE, palette, config) {
   return root;
 }
 
-export function createPursuerVisual(THREE, palette) {
+export function createPursuerVisual(THREE, palette, textures = {}) {
   const root = new THREE.Group();
   root.name = 'bronze-stone-beast';
-  const stoneMaterial = new THREE.MeshStandardMaterial({ color: palette.bronze, roughness: 0.9 });
-  const goldMaterial = new THREE.MeshStandardMaterial({ color: palette.dunhuangGold, roughness: 0.65 });
-  const redMaterial = new THREE.MeshBasicMaterial({ color: palette.cinnabar });
-  const body = new THREE.Mesh(new THREE.DodecahedronGeometry(1.1, 1), stoneMaterial);
+  const stoneMaterial = standardMaterial(THREE, palette, 'muralBlue', 'bronze', { roughness: 0.86 }, textures.stone);
+  const faceMaterial = standardMaterial(THREE, palette, 'paper', 'plaster', { roughness: 0.78 }, textures.paper);
+  const goldMaterial = standardMaterial(THREE, palette, 'muralGold', 'dunhuangGold', { roughness: 0.46 });
+  const redMaterial = new THREE.MeshBasicMaterial({ color: color(palette, 'vermilion', 'cinnabar') });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(1.08, 14, 10), stoneMaterial);
+  body.name = 'beast-body';
   body.scale.set(1.35, 0.9, 1.05);
   body.position.y = 1;
-  const jaw = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.32, 0.86), stoneMaterial);
+  const jaw = new THREE.Mesh(new THREE.CapsuleGeometry(0.48, 0.5, 4, 10), faceMaterial);
+  jaw.name = 'beast-face';
   jaw.position.set(0, 0.52, 0.28);
   const mane = new THREE.Mesh(new THREE.TorusGeometry(0.92, 0.14, 6, 12), stoneMaterial);
+  mane.name = 'beast-mane';
   mane.rotation.x = Math.PI / 2;
   mane.position.y = 1.12;
   const hornGeometry = new THREE.ConeGeometry(0.25, 0.9, 6);
@@ -209,16 +298,19 @@ export function createPursuerVisual(THREE, palette) {
   const eyeGeometry = new THREE.SphereGeometry(0.09, 8, 6);
   const leftEye = new THREE.Mesh(eyeGeometry, redMaterial);
   const rightEye = new THREE.Mesh(eyeGeometry, redMaterial);
+  leftEye.name = 'beast-eye-left';
+  rightEye.name = 'beast-eye-right';
   leftEye.position.set(-0.3, 1.2, 0.9);
   rightEye.position.set(0.3, 1.2, 0.9);
   const forehead = new THREE.Mesh(new THREE.OctahedronGeometry(0.22, 0), goldMaterial);
+  forehead.name = 'beast-brow';
   forehead.position.set(0, 1.48, 0.85);
   root.add(body, jaw, mane, leftHorn, rightHorn, leftEye, rightEye, forehead);
   root.visible = false;
   return root;
 }
 
-export function createPickupVisual(THREE, palette, type = 'COIN') {
+export function createPickupVisual(THREE, palette, type = 'COIN', textures = {}) {
   const cache = getVisualCache(THREE, palette);
   const variantNames = ['COIN', 'SHIELD', 'BOOST', 'MAGNET'];
   if (cache.pickup) {
@@ -233,9 +325,10 @@ export function createPickupVisual(THREE, palette, type = 'COIN') {
   const root = new THREE.Group();
   root.name = 'dunhuang-pickup';
   const variants = new Map();
-  const gold = new THREE.MeshStandardMaterial({ color: palette.dunhuangGold, emissive: palette.dunhuangGold, emissiveIntensity: 0.18, roughness: 0.45 });
-  const blue = new THREE.MeshStandardMaterial({ color: palette.stoneBlue, emissive: palette.stoneBlue, emissiveIntensity: 0.18, roughness: 0.42 });
-  const red = new THREE.MeshStandardMaterial({ color: palette.cinnabar, emissive: palette.cinnabar, emissiveIntensity: 0.2, roughness: 0.45 });
+  const gold = standardMaterial(THREE, palette, 'muralGold', 'dunhuangGold', { emissive: color(palette, 'muralGold', 'dunhuangGold'), emissiveIntensity: 0.18, roughness: 0.4 });
+  const blue = standardMaterial(THREE, palette, 'turquoise', 'stoneBlue', { emissive: color(palette, 'turquoise', 'stoneBlue'), emissiveIntensity: 0.18, roughness: 0.4 });
+  const red = standardMaterial(THREE, palette, 'vermilion', 'cinnabar', { emissive: color(palette, 'vermilion', 'cinnabar'), emissiveIntensity: 0.2, roughness: 0.42 });
+  const ink = standardMaterial(THREE, palette, 'ink', 'bronze', { roughness: 0.9 });
   const addVariant = (name, group) => {
     group.name = name.toLowerCase();
     group.visible = false;
@@ -257,27 +350,37 @@ export function createPickupVisual(THREE, palette, type = 'COIN') {
   coinHole.closePath();
   coinShape.holes.push(coinHole);
   const coin = new THREE.Mesh(new THREE.ShapeGeometry(coinShape), gold);
+  coin.name = 'coin-face';
   coin.rotation.x = Math.PI / 2;
   const coinBorder = new THREE.Mesh(new THREE.TorusGeometry(0.29, 0.025, 5, 12), gold);
+  coinBorder.name = 'coin-border';
   coinBorder.rotation.x = Math.PI / 2;
+  const coinHoleMesh = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 0.16), ink);
+  coinHoleMesh.name = 'coin-hole';
+  coinHoleMesh.position.y = 0.03;
   addVariant('COIN', new THREE.Group());
-  variants.get('COIN').add(coin, coinBorder);
+  variants.get('COIN').add(coin, coinBorder, coinHoleMesh);
 
   const shield = new THREE.Group();
-  shield.add(
-    new THREE.Mesh(new THREE.OctahedronGeometry(0.34, 0), blue),
-    new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.04, 6, 12), gold),
-    new THREE.Mesh(new THREE.CircleGeometry(0.14, 8), gold),
-  );
+  const shieldFace = new THREE.Mesh(new THREE.OctahedronGeometry(0.34, 0), blue);
+  shieldFace.name = 'shield-face';
+  const shieldRing = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.04, 6, 12), gold);
+  shieldRing.name = 'shield-apse';
+  const shieldGem = new THREE.Mesh(new THREE.CircleGeometry(0.14, 8), gold);
+  shieldGem.name = 'shield-gem';
+  shield.add(shieldFace, shieldRing, shieldGem);
   shield.children[1].rotation.x = Math.PI / 2;
   shield.children[2].position.z = 0.08;
   addVariant('SHIELD', shield);
 
   const boost = new THREE.Group();
   const seal = new THREE.Mesh(new THREE.OctahedronGeometry(0.32, 0), red);
+  seal.name = 'boost-seal';
   const ribbonGeometry = new THREE.BoxGeometry(0.12, 0.8, 0.04);
   const ribbonLeft = new THREE.Mesh(ribbonGeometry, gold);
   const ribbonRight = new THREE.Mesh(ribbonGeometry, gold);
+  ribbonLeft.name = 'boost-ribbon-left';
+  ribbonRight.name = 'boost-ribbon-right';
   ribbonLeft.position.x = -0.25;
   ribbonRight.position.x = 0.25;
   ribbonLeft.rotation.z = -0.3;
@@ -286,10 +389,11 @@ export function createPickupVisual(THREE, palette, type = 'COIN') {
   addVariant('BOOST', boost);
 
   const magnet = new THREE.Group();
-  magnet.add(
-    new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 6, 12), gold),
-    new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.26, 0.18), red),
-  );
+  const magnetRing = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 6, 12), gold);
+  magnetRing.name = 'magnet-ring';
+  const magnetCap = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.26, 0.18), red);
+  magnetCap.name = 'magnet-cap';
+  magnet.add(magnetRing, magnetCap);
   magnet.children[1].position.y = -0.22;
   addVariant('MAGNET', magnet);
 

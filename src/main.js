@@ -77,7 +77,7 @@ try {
   const environment = new EnvironmentSystem({
     config: CONFIG,
     track,
-    createVisual: () => theme.createEnvironmentVisual({ THREE, config: CONFIG }),
+    createVisual: () => theme.createEnvironmentVisual({ THREE, config: CONFIG, textures }),
   });
   environment.forEachVisual((visual) => scene.add(visual));
   const skyTexture = textures[theme.scene.skyTextureName] ?? textures.sky;
@@ -93,7 +93,7 @@ try {
     track,
     config: CONFIG,
     palette: theme.palette,
-    createVisual: theme.createRunnerVisual,
+    createVisual: (context) => theme.createRunnerVisual({...context, textures}),
   });
   scene.add(runner.root);
   const cameraRig = new CameraRig({ camera, Vector3: THREE.Vector3, track, config: CONFIG });
@@ -106,17 +106,17 @@ try {
   const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: theme.palette });
   const powerUp = new PowerUp({ config: CONFIG });
   const pursuer = new Pursuer({ config: CONFIG });
-  pursuer.visual = theme.createPursuerVisual({ THREE, config: CONFIG });
+  pursuer.visual = theme.createPursuerVisual({ THREE, config: CONFIG, textures });
   scene.add(pursuer.visual);
   const obstacleSpawner = new ObstacleSpawner({
     config: CONFIG,
-    createVisual: () => theme.createObstacleVisual({ THREE, config: CONFIG }),
+    createVisual: () => theme.createObstacleVisual({ THREE, config: CONFIG, textures }),
   });
   obstacleSpawner.forEachVisual((visual) => scene.add(visual));
   const pickupSpawner = new PickupSpawner({
     config: CONFIG,
-    createCoinVisual: () => theme.createPickupVisual({ THREE, config: CONFIG, type: 'COIN' }),
-    createPowerUpVisual: (type) => theme.createPickupVisual({ THREE, config: CONFIG, type }),
+    createCoinVisual: () => theme.createPickupVisual({ THREE, config: CONFIG, type: 'COIN', textures }),
+    createPowerUpVisual: (type) => theme.createPickupVisual({ THREE, config: CONFIG, type, textures }),
   });
   const collision = new CollisionSystem({
     config: CONFIG,
