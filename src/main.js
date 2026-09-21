@@ -330,7 +330,9 @@ try {
     if (gameState.current === GAME_STATES.PLAYING) gameState.transition(GAME_STATES.PAUSED);
     else if (gameState.current === GAME_STATES.PAUSED) gameState.transition(GAME_STATES.PLAYING);
   });
-  document.querySelector('#mute-button').addEventListener('click', (event) => {
+  const muteButton = document.querySelector('#mute-button');
+  muteButton.textContent = sfx.muted ? '♫̸' : '♫';
+  muteButton.addEventListener('click', (event) => {
     event.currentTarget.textContent = sfx.toggleMute() ? '♫̸' : '♫';
   });
   document.addEventListener('visibilitychange', () => {

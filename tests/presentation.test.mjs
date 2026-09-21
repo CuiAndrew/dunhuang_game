@@ -43,6 +43,7 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   assert.match(main, /ui\/Screens\.js\?v=20260920-2/);
   assert.match(main, /systems\/Score\.js\?v=20260920-2/);
   assert.match(main, /world\/TrackGraph\.js\?v=20260920-2/);
+  assert.match(main, /sfx\.muted \? '♫̸' : '♫'/);
   assert.match(main, /action === 'JUMP'.*sfx\.play\('jump'\)/s);
   assert.match(main, /action === 'SLIDE'.*sfx\.play\('slide'\)/s);
   assert.match(main, /pursuer\.consumeRoarCue\(\).*sfx\.play\('roar'\)/s);
