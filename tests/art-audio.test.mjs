@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import * as THREE from 'three';
+
+import { CONFIG } from '../src/core/Config.js';
+import { PALETTE as DUNHUANG_PALETTE } from '../src/art/Palette.js';
 
 const PALETTE = Object.freeze({
   plaster: 0xF0E2C8,
@@ -55,6 +59,24 @@ test('texture cache is isolated by theme id but reuses same-theme textures', asy
 
   assert.equal(dunhuangA.sky, dunhuangB.sky);
   assert.notEqual(dunhuangA.sky, shanghai.sky);
+});
+
+test('Dunhuang visual factories expose recognizable semantic variants', async () => {
+  const props = await import('../src/art/Props.js');
+  const beam = props.createObstacleVisual(THREE, DUNHUANG_PALETTE, CONFIG);
+  beam.setType('BEAM');
+  assert.equal(beam.userData.obstacleType, 'BEAM');
+  assert.ok(beam.userData.heightOffset > 0);
+
+  const coin = props.createPickupVisual(THREE, DUNHUANG_PALETTE, 'COIN');
+  assert.equal(coin.userData.kind, 'COIN');
+  const environment = props.createEnvironmentVisual(THREE, DUNHUANG_PALETTE);
+  environment.setKind('TEMPLE');
+  assert.equal(environment.userData.activeKind, 'TEMPLE');
+
+  const runner = props.createRunnerVisual(THREE, DUNHUANG_PALETTE, CONFIG);
+  assert.ok(runner.root.children.includes(runner.leftLeg));
+  assert.ok(runner.root.children.includes(runner.rightLeg));
 });
 
 test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
