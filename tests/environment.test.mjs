@@ -8,7 +8,7 @@ test('EnvironmentSystem keeps decorative props in a bounded arc-length pool', as
     evalTrack(s, out) {
       out.position.set(s, 0, 0);
       out.forward.set(0, 0, 1);
-      out.right.set(1, 0, 0);
+      out.right.set(-1, 0, 0);
     },
   };
   const makeVisual = () => ({ visible: false, position: { set() {} }, rotation: { y: 0 } });

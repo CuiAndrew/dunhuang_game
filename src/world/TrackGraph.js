@@ -303,7 +303,9 @@ export class TrackGraph {
       segment.slope * horizontalRatio,
       Math.cos(yaw) * horizontalRatio,
     );
-    out.right.set(Math.cos(yaw), 0, Math.sin(yaw));
+    // The runner advances along +Z at yaw 0. In Three.js' camera convention,
+    // screen-right is the horizontal vector obtained from forward × up: -X.
+    out.right.set(-Math.cos(yaw), 0, -Math.sin(yaw));
   }
 
   _appendSample(sample, s, x, y, z, yaw, slope, type) {
@@ -313,7 +315,7 @@ export class TrackGraph {
     sample.type = type;
     sample.position.set(x, y, z);
     sample.forward.set(-Math.sin(yaw) * horizontalRatio, slope * horizontalRatio, Math.cos(yaw) * horizontalRatio);
-    sample.right.set(Math.cos(yaw), 0, Math.sin(yaw));
+    sample.right.set(-Math.cos(yaw), 0, -Math.sin(yaw));
     this.sampleRing[index] = sample;
     this.activeSampleCount += 1;
   }

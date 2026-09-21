@@ -20,7 +20,7 @@ import { PerformanceBudget } from './systems/Performance.js';
 import { Score } from './systems/Score.js?v=20260920-2';
 import { PickupSpawner } from './world/PickupSpawner.js';
 import { ObstacleSpawner } from './world/ObstacleSpawner.js';
-import { TrackGraph } from './world/TrackGraph.js?v=20260920-2';
+import { TrackGraph } from './world/TrackGraph.js?v=20260920-3';
 import { TrackMesh } from './world/TrackMesh.js';
 import { EnvironmentSystem } from './world/Environment.js?v=20260920-3';
 

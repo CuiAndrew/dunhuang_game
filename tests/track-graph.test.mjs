@@ -35,7 +35,8 @@ test('TrackGraph keeps the requested path ahead and evaluates normalized frame v
   assert.equal(frame.position.z, 0);
   assert.ok(Math.abs(frame.forward.x) < 0.0001);
   assert.equal(frame.forward.z, 1);
-  assert.equal(frame.right.x, 1);
+  assert.equal(frame.right.x, -1);
+  assert.equal(Math.abs(frame.right.z), 0);
 
   graph.ensureAhead(350, 260);
   const segments = graph.getSegmentSnapshots();

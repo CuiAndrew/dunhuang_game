@@ -49,7 +49,7 @@ function createTrack() {
     evalTrack(s, out) {
       out.position.set(0, 0, s);
       out.forward.set(0, 0, 1);
-      out.right.set(1, 0, 0);
+      out.right.set(-1, 0, 0);
       return out;
     },
   };
