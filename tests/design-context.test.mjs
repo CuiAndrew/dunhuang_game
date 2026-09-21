@@ -38,14 +38,16 @@ test('feasibility research and delivery plan are checked in', () => {
   assert.match(plan, /GAP 组全车道占用/);
 });
 
-test('sixteen-point acceptance record is checked in', () => {
+test('acceptance record includes gameplay and theme-art evidence', () => {
   const acceptancePath = new URL('../docs/验收记录.md', import.meta.url);
   assert.equal(existsSync(acceptancePath), true);
   const acceptance = readFileSync(acceptancePath, 'utf8');
-  assert.equal((acceptance.match(/^\|\s*\d+\s*\|/gm) ?? []).length, 16);
+  assert.equal((acceptance.match(/^\|\s*\d+\s*\|/gm) ?? []).length, 20);
   assert.match(acceptance, /5 分钟/);
   assert.match(acceptance, /真实设备 FPS/);
   assert.match(acceptance, /MENU.*PLAYING.*PAUSED.*PLAYING/);
   assert.match(acceptance, /可跳跃路线/);
   assert.match(acceptance, /历史最高分.*新纪录/);
+  assert.match(acceptance, /主题替换边界/);
+  assert.match(acceptance, /障碍与道具语义形状/);
 });
