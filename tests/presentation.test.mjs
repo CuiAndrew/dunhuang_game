@@ -29,4 +29,5 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /action === 'JUMP'.*sfx\.play\('jump'\)/s);
   assert.match(main, /action === 'SLIDE'.*sfx\.play\('slide'\)/s);
+  assert.match(main, /pursuer\.consumeRoarCue\(\).*sfx\.play\('roar'\)/s);
 });
