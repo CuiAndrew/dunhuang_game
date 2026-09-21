@@ -35,7 +35,11 @@ export function assertThemeDefinition(theme) {
   } else {
     for (const key of REQUIRED_SCENE_KEYS) {
       const value = theme.scene[key];
-      if (value === undefined || value === null || (key === 'skyTextureName' && value === '')) {
+      if (
+        value === undefined
+        || value === null
+        || (key === 'skyTextureName' && (typeof value !== 'string' || value.trim() === ''))
+      ) {
         missing.push(`scene.${key}`);
       }
     }
