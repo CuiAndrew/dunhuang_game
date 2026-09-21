@@ -81,7 +81,7 @@ test('index bootstraps Three r169 and exposes accessible application containers'
   assert.match(html, /id="error-panel"/);
   assert.match(html, /src="\.\/src\/main\.js(?:\?v=[^"]+)?"/);
   assert.match(html, /src="\.\/src\/main\.js\?v=/);
-  assert.match(html, /src="\.\/src\/main\.js\?v=20260920-12"/);
+  assert.match(html, /src="\.\/src\/main\.js\?v=20260921-13"/);
   assert.match(html, /#screen-layer\[hidden\]\s*\{\s*display:\s*none;/);
 });
 
@@ -99,5 +99,5 @@ test('main bootstraps the registered theme instead of importing art factories di
   assert.match(main, /createVisual:\s*\(context\)\s*=>\s*theme\.createRunnerVisual/);
   assert.match(main, /theme\.createRunnerVisual\(\{\.\.\.context, textures\}\)/);
   assert.match(main, /theme\.createPursuerVisual\(\{ THREE, config: CONFIG, textures \}\)/);
-  assert.match(registry, /ThemeDefinition\.js\?v=20260920-12/);
+  assert.match(registry, /ThemeDefinition\.js\?v=20260921-13/);
 });

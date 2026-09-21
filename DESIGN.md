@@ -3,6 +3,13 @@ version: alpha
 name: "Dunhuang Run"
 description: "A responsive browser runner whose UI feels like a fragment of a Dunhuang mural: mineral pigment, worn plaster, and a single gold coin seal."
 colors:
+  muralBlue: "#244B7A"
+  turquoise: "#3D9B9B"
+  vermilion: "#D84B35"
+  apricot: "#F3C77B"
+  muralGold: "#E8B23A"
+  paper: "#F6E7C8"
+  caveNight: "#172536"
   ochreRed: "#A63B29"
   cinnabar: "#C8402F"
   stoneBlue: "#2E5C8A"
@@ -37,11 +44,11 @@ spacing:
   safe-edge: "max(1rem, env(safe-area-inset-left))"
 components:
   hud:
-    surface: "translucent plaster with bronze hairline"
+    surface: "mural-blue badges with gold edge and semantic pigment icons"
   button:
-    surface: "cinnabar seal with dunhuang gold focus ring"
+    surface: "vermilion seal with mural-gold focus ring"
   overlay:
-    surface: "ink-to-nightTeal vignette"
+    surface: "paper-panel with cloud motif, flying ribbon, and ink-to-caveNight vignette"
 ---
 
 # Dunhuang Run Design System
@@ -66,7 +73,11 @@ The interface should feel like a moving section of a weathered Mogao Cave mural:
 
 ## Colors
 
-`plaster`, `sand`, `bronze`, `ink`, and `nightTeal` create the quiet hierarchy. `ochreRed` and `cinnabar` signal clothing, danger, or committed actions; `stoneBlue` is reserved for sky, fabric, and the magnet; `dunhuangGold` is the reward and focus color. Error flashes are cinnabar with text or icon support, never color alone. The game uses a single dark scene theme; high-contrast browser preferences retain opaque UI text and outlines rather than switching to a separate palette.
+`paper`, `sand`, `bronze`, `ink`, and `caveNight` create the quiet hierarchy. `vermilion` and `cinnabar` signal clothing, danger, or committed actions; `muralBlue` and `turquoise` carry the mural sky, fabric, and cloud ornaments; `muralGold` is the reward and focus color. Error flashes are vermilion with text or icon support, never color alone. The game uses a cave-night scene with an apricot horizon so the runner remains readable; high-contrast browser preferences retain opaque UI text and outlines rather than switching to a separate palette.
+
+## 敦煌 Q 版纸片 UI
+
+The Q-style pass uses rounded silhouettes, oversized semantic marks, and warm paper panels rather than photorealistic assets. `index.html` mirrors the runtime tokens as CSS custom properties: HUD badges use mural blue/turquoise, screens use a paper grain with gold rules, and primary actions use a vermilion seal. Cloud motifs and flying ribbons are procedural CSS decorations; they remain static and low-contrast under `prefers-reduced-motion`. The DOM keeps native buttons, Chinese labels, live-region HUD updates, and the existing screen IDs so interaction and accessibility do not depend on the art treatment.
 
 ## Typography
 
@@ -125,6 +136,10 @@ The voice is concise, active, and in Simplified Chinese: “开始逃亡”, “
 
 The 3D art layer is selected through `ThemeRegistry` rather than imported by gameplay systems. A theme definition owns `id`, `palette`, `scene`, and six factories: `createTextures`, `createRunnerVisual`, `createPursuerVisual`, `createObstacleVisual`, `createPickupVisual`, and `createEnvironmentVisual`. The runner factory must return `root`, `leftLeg`, and `rightLeg`; pooled obstacle and pickup visuals retain `setType()` plus their existing `userData` collision metadata.
 
-The shipped `dunhuang` token set maps to mineral-pigment colors in `src/art/Palette.js`: ochre red/cinnabar for the robe and danger, stone blue/green for sky and fabric, bronze/plaster/sand for masonry, Dunhuang gold for rewards and focus, ink for silhouettes, and night teal for the sky/fog. Canvas textures are cached by `themeId:name`, so a future adapter can reuse texture names without sharing the wrong texture instance.
+The shipped `dunhuang` token set maps to mineral-pigment colors in `src/art/Palette.js`: vermilion/cinnabar for the robe and danger, mural blue/turquoise for sky, fabric, and cloud marks, bronze/paper/sand for masonry, mural gold for rewards and focus, ink for silhouettes, and cave night for the sky/fog. Canvas textures (`sky`, `clouds`, `paper`, `mural`, `sand`, `stone`) are cached by `themeId:name`, so a future adapter can reuse texture names without sharing the wrong texture instance.
+
+## 上海外滩替换边界
+
+The second visual version can register `shanghai-bund` with its own palette, scene light tokens, CanvasTexture drawings, and the same procedural factory signatures. Its geometry may become art-deco towers, river lights, and a different runner costume, but it must keep the visual semantic API (`setType`, `setKind`, runner leg nodes) and never modify lane state, obstacle type strings, collision height metadata, pool sizes, or gameplay probabilities. Switching `DEFAULT_THEME_ID` remains a composition-boundary change.
 
 To add a Shanghai Bund version, register a second definition (for example `shanghai-bund`) with its own palette, scene colors, CanvasTexture draw functions, and the same factory signatures. The adapter may replace geometry and materials, but it must not change lane state, obstacle type strings, collision height metadata, pool sizes, or gameplay probabilities. Switching `DEFAULT_THEME_ID` is therefore a visual change at the composition boundary, not a gameplay fork.

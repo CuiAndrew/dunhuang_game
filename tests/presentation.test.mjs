@@ -43,10 +43,10 @@ test('result screen exposes historical high score and new-record feedback', () =
 test('main loop routes jump and slide actions through their dedicated sound cues', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /audio\/Sfx\.js\?v=20260920-2/);
-  assert.match(main, /ui\/Hud\.js\?v=20260920-2/);
+  assert.match(main, /ui\/Hud\.js\?v=20260921-13/);
   assert.match(main, /entities\/Runner\.js\?v=20260920-12/);
   assert.match(main, /entities\/Pursuer\.js\?v=20260920-2/);
-  assert.match(main, /ui\/Screens\.js\?v=20260920-2/);
+  assert.match(main, /ui\/Screens\.js\?v=20260921-13/);
   assert.match(main, /systems\/Score\.js\?v=20260920-2/);
   assert.match(main, /world\/TrackGraph\.js\?v=20260920-3/);
   assert.match(main, /sfx\.muted \? '♫̸' : '♫'/);
