@@ -8,12 +8,14 @@ export class Score {
     this.total = 0;
     this.highScore = this._readHighScore();
     this.persistedHighScore = this.highScore;
+    this.newRecord = false;
   }
 
   reset() {
     this.distance = 0;
     this.coins = 0;
     this.total = 0;
+    this.newRecord = false;
   }
 
   updateDistance(s) {
@@ -39,6 +41,7 @@ export class Score {
 
   _recalculate() {
     this.total = this.distance * this.config.score.distanceValue + this.coins * this.config.score.coinValue;
+    this.newRecord = this.total > this.persistedHighScore;
     this.highScore = Math.max(this.highScore, this.total);
   }
 

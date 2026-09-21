@@ -179,6 +179,7 @@ test('Score totals distance and coins then persists only a new high score', asyn
   assert.equal(score.coins, 2);
   assert.equal(score.total, 45);
   assert.equal(score.highScore, 45);
+  assert.equal(score.newRecord, true);
   score.commitHighScore();
   assert.deepEqual(writes, [[CONFIG.score.highScoreStorageKey, '45']]);
 });

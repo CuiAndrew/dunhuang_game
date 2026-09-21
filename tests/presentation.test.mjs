@@ -27,6 +27,13 @@ test('presentation modules keep procedural effects and native accessibility hook
   assert.match(readFileSync(new URL('../src/ui/Hud.js', import.meta.url), 'utf8'), /danger-active/);
 });
 
+test('result screen exposes historical high score and new-record feedback', () => {
+  const screens = readFileSync(new URL('../src/ui/Screens.js', import.meta.url), 'utf8');
+  assert.match(screens, /score\.highScore/);
+  assert.match(screens, /score\.newRecord/);
+  assert.match(screens, /新纪录/);
+});
+
 test('main loop routes jump and slide actions through their dedicated sound cues', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /audio\/Sfx\.js\?v=20260920-2/);

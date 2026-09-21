@@ -22,7 +22,8 @@ export class Screens {
   }
 
   showResult(score) {
-    this.layer.innerHTML = `<div class="title-panel"><p class="eyebrow">石兽已近</p><h2>本次逃亡</h2><p class="result-copy">${Math.floor(score.distance)} m · ${score.coins} 枚铜钱 · ${Math.floor(score.total)} 分</p><button id="restart-button" type="button">再来一次</button></div>`;
+    const recordLabel = score.newRecord ? '<span class="new-record">新纪录</span>' : '';
+    this.layer.innerHTML = `<div class="title-panel"><p class="eyebrow">石兽已近</p><h2>本次逃亡</h2><p class="result-copy">${Math.floor(score.distance)} m · ${score.coins} 枚铜钱 · ${Math.floor(score.total)} 分</p><p class="result-best">历史最高分 ${Math.floor(score.highScore)} ${recordLabel}</p><button id="restart-button" type="button">再来一次</button></div>`;
     this.layer.querySelector('#restart-button').onclick = this.onRestart;
     this.layer.hidden = false;
   }
