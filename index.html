@@ -7,15 +7,22 @@
     <title>敦煌逃亡</title>
     <style>
       :root {
+        --mural-blue: #244B7A;
+        --turquoise: #3D9B9B;
+        --vermilion: #D84B35;
+        --apricot: #F3C77B;
+        --mural-gold: #E8B23A;
+        --paper: #F6E7C8;
+        --cave-night: #172536;
         --ochre-red: #A63B29;
         --cinnabar: #C8402F;
         --stone-blue: #2E5C8A;
-        --dunhuang-gold: #E8B23A;
+        --dunhuang-gold: var(--mural-gold);
         --bronze: #6B5A3E;
         --sand: #E3C68B;
-        --plaster: #F0E2C8;
+        --plaster: var(--paper);
         --ink: #2B1F1A;
-        --night-teal: #1A2A33;
+        --night-teal: var(--cave-night);
         --ui-font: "Songti SC", "STSong", "Noto Serif SC", serif;
         --utility-font: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
         --safe-top: max(1rem, env(safe-area-inset-top));
@@ -72,21 +79,43 @@
       .hud-value, .hud-power-up {
         position: absolute;
         z-index: 2;
-        padding: 0.55rem 0.75rem;
-        border: 1px solid rgb(227 198 139 / 55%);
-        border-radius: 0.25rem;
-        color: var(--plaster);
-        background: rgb(43 31 26 / 67%);
-        font: 0.8rem/1.2 var(--utility-font);
-        letter-spacing: 0.04em;
+        min-height: 2.4rem;
+        padding: 0.62rem 0.85rem 0.62rem 2.15rem;
+        border: 1px solid rgb(232 178 58 / 72%);
+        border-radius: 999px;
+        color: var(--paper);
+        background: linear-gradient(135deg, rgb(23 37 54 / 92%), rgb(36 75 122 / 82%));
+        box-shadow: 0 0.35rem 1rem rgb(10 18 30 / 28%), inset 0 0 0 1px rgb(246 231 200 / 10%);
+        font: 0.78rem/1.2 var(--utility-font);
+        letter-spacing: 0.05em;
+        text-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+        white-space: nowrap;
       }
+
+      .hud-badge::before {
+        position: absolute;
+        left: 0.78rem;
+        top: 50%;
+        color: var(--apricot);
+        font: 1rem/1 var(--ui-font);
+        transform: translateY(-50%);
+      }
+      .hud-badge[data-kind="distance"]::before { content: "↝"; }
+      .hud-badge[data-kind="coins"]::before { content: "◈"; color: var(--mural-gold); }
+      .hud-badge[data-kind="score"]::before { content: "✦"; }
+      .hud-badge[data-kind="power-up"]::before { content: "✧"; color: var(--turquoise); }
 
       #distance-display { top: var(--safe-top); left: var(--safe-left); }
       #coin-display { top: var(--safe-top); right: var(--safe-right); }
       #high-score-display { top: var(--safe-top); left: 50%; transform: translateX(-50%); }
-      #power-up-display { bottom: var(--safe-bottom); left: var(--safe-left); min-width: 7rem; background: conic-gradient(var(--dunhuang-gold) var(--power-progress, 0%), rgb(43 31 26 / 67%) 0); }
-      .new-record { color: var(--dunhuang-gold); font-weight: 700; letter-spacing: 0.08em; }
-      #danger-vignette { inset: 0; border: 3rem solid rgb(200 64 47 / 40%); opacity: 0; transition: opacity 120ms linear; }
+      #power-up-display {
+        bottom: var(--safe-bottom);
+        left: var(--safe-left);
+        min-width: 8.5rem;
+        background: conic-gradient(var(--mural-gold) var(--power-progress, 0%), rgb(23 37 54 / 88%) 0);
+      }
+      .new-record { color: var(--mural-gold); font-weight: 700; letter-spacing: 0.08em; }
+      #danger-vignette { inset: 0; border: 3rem solid rgb(216 75 53 / 35%); opacity: 0; transition: opacity 120ms linear; }
       #danger-vignette.danger-active { animation: danger-breathe 0.75s ease-in-out infinite; transform-origin: center; }
 
       @keyframes danger-breathe {
@@ -99,13 +128,16 @@
         z-index: 3;
         min-width: 2.75rem;
         min-height: 2.75rem;
-        border: 1px solid var(--bronze);
-        border-radius: 0.25rem;
-        color: var(--plaster);
-        background: rgb(43 31 26 / 78%);
+        border: 1px solid var(--mural-gold);
+        border-radius: 50%;
+        color: var(--paper);
+        background: var(--cave-night);
+        box-shadow: 0 0.35rem 0.8rem rgb(10 18 30 / 30%), inset 0 0 0 1px rgb(61 155 155 / 32%);
         cursor: pointer;
         pointer-events: auto;
+        transition: transform 140ms ease, background-color 140ms ease;
       }
+      #pause-button:hover, #mute-button:hover { background: var(--mural-blue); transform: translateY(-1px); }
       #pause-button { top: calc(var(--safe-top) + 3.3rem); right: var(--safe-right); }
       #mute-button { bottom: var(--safe-bottom); right: var(--safe-right); }
 
@@ -113,67 +145,156 @@
         display: grid;
         place-items: center;
         padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
-        background: radial-gradient(circle at center, transparent 0%, rgb(26 42 51 / 32%) 72%, rgb(43 31 26 / 82%) 100%);
+        background: radial-gradient(circle at center, transparent 0%, rgb(23 37 54 / 18%) 58%, rgb(23 37 54 / 76%) 100%);
       }
 
       #screen-layer[hidden] { display: none; }
 
-      .title-panel {
-        width: min(100%, 32rem);
-        padding: clamp(1.25rem, 4vw, 2.5rem);
+      .paper-panel, .title-panel {
+        position: relative;
+        width: min(100%, 34rem);
+        max-height: 100%;
+        overflow: hidden;
+        padding: clamp(1.45rem, 5vw, 3rem);
         text-align: center;
-        border: 1px solid rgb(227 198 139 / 58%);
-        border-radius: 0.75rem;
-        background: linear-gradient(135deg, rgb(43 31 26 / 90%), rgb(26 42 51 / 84%));
-        box-shadow: inset 0 0 0 1px rgb(232 178 58 / 13%);
+        border: 2px solid var(--mural-gold);
+        border-radius: 1.15rem 1.15rem 0.45rem 0.45rem;
+        color: var(--ink);
+        background:
+          linear-gradient(90deg, rgb(216 75 53 / 8%) 0 0.45rem, transparent 0.45rem calc(100% - 0.45rem), rgb(216 75 53 / 8%) calc(100% - 0.45rem)),
+          radial-gradient(circle at 20% 20%, rgb(255 255 255 / 32%) 0 1px, transparent 1.5px) 0 0 / 13px 13px,
+          var(--paper);
+        box-shadow: 0 1.2rem 3rem rgb(10 18 30 / 36%), inset 0 0 0 0.35rem rgb(36 75 122 / 9%), inset 0 0 0 0.55rem rgb(232 178 58 / 12%);
       }
+
+      .paper-panel::after {
+        position: absolute;
+        inset: 0.8rem;
+        border: 1px solid rgb(36 75 122 / 28%);
+        border-radius: 0.65rem 0.65rem 0.25rem 0.25rem;
+        content: "";
+        pointer-events: none;
+      }
+
+      .screen-decoration { position: absolute; pointer-events: none; }
+      .cloud-motif {
+        top: -1.4rem;
+        left: 9%;
+        width: 82%;
+        height: 3rem;
+        opacity: 0.7;
+        border-bottom: 0.28rem solid var(--turquoise);
+        border-radius: 50%;
+        filter: drop-shadow(2.5rem 0 0 var(--turquoise));
+      }
+      .cloud-motif::before, .cloud-motif::after {
+        position: absolute;
+        width: 3.5rem;
+        height: 1.5rem;
+        border: 0.22rem solid var(--turquoise);
+        border-bottom: 0;
+        border-radius: 3.5rem 3.5rem 0 0;
+        content: "";
+      }
+      .cloud-motif::before { left: 12%; top: 1.05rem; }
+      .cloud-motif::after { right: 18%; top: 0.7rem; transform: scale(0.78); }
+      .flying-ribbon {
+        right: -1.2rem;
+        bottom: 1.1rem;
+        width: 7rem;
+        height: 8rem;
+        border: 0.28rem solid var(--vermilion);
+        border-left-color: transparent;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        opacity: 0.72;
+        transform: rotate(22deg);
+      }
+      .flying-ribbon::after {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.4rem;
+        width: 3.8rem;
+        height: 4.8rem;
+        border: 0.18rem solid var(--mural-gold);
+        border-left-color: transparent;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        content: "";
+      }
+
+      .title-panel > *:not(.screen-decoration) { position: relative; z-index: 1; }
 
       .eyebrow {
         margin: 0 0 0.75rem;
-        color: var(--dunhuang-gold);
+        color: var(--mural-blue);
         font: 0.75rem/1.25 var(--utility-font);
         letter-spacing: 0.18em;
       }
 
-      h1 {
+      h1, h2 {
         margin: 0;
-        color: var(--plaster);
+        color: var(--mural-blue);
         font-size: clamp(2.5rem, 12vw, 5.5rem);
-        font-weight: 600;
+        font-weight: 800;
         line-height: 1;
         letter-spacing: 0.08em;
+        text-shadow: 0.1rem 0.12rem 0 rgb(232 178 58 / 40%);
       }
+      h2 { font-size: clamp(2rem, 8vw, 3.4rem); }
 
       .instruction {
         max-width: 24rem;
         margin: 1.25rem auto;
-        color: rgb(240 226 200 / 87%);
+        color: rgb(43 31 26 / 82%);
         line-height: 1.7;
       }
 
-      #start-button {
+      .controls-hint {
+        margin: 0 auto 1.3rem;
+        color: rgb(36 75 122 / 78%);
+        font: 0.72rem/1.4 var(--utility-font);
+        letter-spacing: 0.04em;
+      }
+      kbd {
+        display: inline-grid;
+        min-width: 1.5rem;
+        min-height: 1.4rem;
+        place-items: center;
+        margin: 0 0.16rem;
+        border: 1px solid rgb(36 75 122 / 42%);
+        border-radius: 0.3rem;
+        background: rgb(36 75 122 / 9%);
+        font: inherit;
+      }
+
+      .seal-button {
         min-width: 12rem;
         min-height: 3.25rem;
-        border: 1px solid var(--dunhuang-gold);
-        border-radius: 0.25rem;
-        color: var(--plaster);
-        background: var(--cinnabar);
+        border: 2px solid var(--mural-gold);
+        border-radius: 0.5rem;
+        color: var(--paper);
+        background: var(--vermilion);
+        box-shadow: 0 0.28rem 0 var(--ochre-red), inset 0 0 0 1px rgb(246 231 200 / 35%);
         cursor: pointer;
         font-weight: 600;
         letter-spacing: 0.12em;
-        transition: background-color 120ms ease, transform 120ms ease;
+        transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
       }
 
-      #start-button:hover { background: var(--ochre-red); }
-      #start-button:active { transform: translateY(1px); }
+      .seal-button:hover { background: var(--ochre-red); }
+      .seal-button:active { transform: translateY(2px); box-shadow: 0 0.12rem 0 var(--ochre-red), inset 0 0 0 1px rgb(246 231 200 / 35%); }
+      .button-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.75rem; }
+      .button-row .seal-button { min-width: 9.5rem; }
+      .result-copy, .result-best { margin: 0.8rem 0; color: rgb(43 31 26 / 82%); }
 
       #error-panel {
         z-index: 4;
         display: grid;
         place-items: center;
         padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
-        color: var(--plaster);
-        background: rgb(43 31 26 / 92%);
+        color: var(--paper);
+        background: rgb(23 37 54 / 92%);
       }
 
       #error-panel[hidden] { display: none; }
@@ -181,19 +302,29 @@
       .error-card {
         width: min(100%, 36rem);
         padding: clamp(1.25rem, 4vw, 2.5rem);
-        border: 1px solid var(--cinnabar);
+        border: 1px solid var(--vermilion);
         border-radius: 0.75rem;
-        background: var(--night-teal);
+        background: var(--cave-night);
       }
 
       #error-message {
         overflow-wrap: anywhere;
-        color: var(--sand);
+        color: var(--apricot);
         font-family: var(--utility-font);
+      }
+
+      @media (max-width: 640px) {
+        .hud-value, .hud-power-up { min-height: 2.15rem; padding: 0.5rem 0.65rem 0.5rem 1.9rem; font-size: 0.68rem; }
+        .hud-badge::before { left: 0.62rem; font-size: 0.86rem; }
+        #pause-button { top: calc(var(--safe-top) + 2.8rem); }
+        .paper-panel, .title-panel { padding: 1.5rem 1.15rem 1.4rem; }
+        .instruction { margin: 1rem auto; font-size: 0.92rem; }
+        .seal-button { min-width: 10.5rem; min-height: 3rem; }
       }
 
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; animation: none !important; }
+        .flying-ribbon, .cloud-motif { opacity: 0.34; }
       }
     </style>
     <script type="importmap">
@@ -209,20 +340,23 @@
     <main id="game-shell" aria-label="敦煌逃亡游戏">
       <canvas id="game-canvas" aria-label="敦煌逃亡 3D 游戏画面"></canvas>
       <div id="hud" aria-live="polite" aria-atomic="true">
-        <div id="distance-display" class="hud-value">距离 0 m</div>
-        <div id="coin-display" class="hud-value">◈ 0</div>
-        <div id="high-score-display" class="hud-value">最高分 0</div>
-        <div id="power-up-display" class="hud-power-up"></div>
+        <div id="distance-display" class="hud-value hud-badge" data-kind="distance">距离 0 m</div>
+        <div id="coin-display" class="hud-value hud-badge" data-kind="coins">◈ 0</div>
+        <div id="high-score-display" class="hud-value hud-badge" data-kind="score">最高分 0</div>
+        <div id="power-up-display" class="hud-power-up hud-badge" data-kind="power-up"></div>
         <div id="danger-vignette" class="danger-vignette" aria-hidden="true"></div>
         <button id="pause-button" type="button" aria-label="暂停游戏">Ⅱ</button>
         <button id="mute-button" type="button" aria-label="静音切换">♫</button>
       </div>
       <section id="screen-layer" aria-label="游戏开始界面">
-        <div class="title-panel">
+        <div class="paper-panel title-panel">
+          <div class="screen-decoration cloud-motif" aria-hidden="true"></div>
+          <div class="screen-decoration flying-ribbon" aria-hidden="true"></div>
           <p class="eyebrow">壁画行者 · 沙海逃亡</p>
           <h1>敦煌逃亡</h1>
           <p class="instruction">自动前行，左右换道，跃过断壁，避开身后的苏醒石兽。</p>
-          <button id="start-button" type="button">开始逃亡</button>
+          <p class="controls-hint"><kbd>←</kbd><kbd>→</kbd> 换道　<kbd>↑</kbd> 跳跃　<kbd>↓</kbd> 滑行</p>
+          <button id="start-button" class="seal-button" type="button">开始逃亡</button>
         </div>
       </section>
       <section id="error-panel" role="alert" aria-live="assertive" hidden>

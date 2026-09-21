@@ -12,6 +12,11 @@ test('presentation layer exposes the HUD and screen contracts without external a
   assert.match(html, /id="mute-button"/);
   assert.match(html, /conic-gradient/);
   assert.match(html, /danger-breathe/);
+  assert.match(html, /--mural-blue/);
+  assert.match(html, /--mural-gold/);
+  assert.match(html, /paper-panel/);
+  assert.match(html, /seal-button/);
+  assert.match(html, /prefers-reduced-motion/);
   assert.match(html, /height:\s*100%/);
   assert.doesNotMatch(html, /\.(png|jpe?g|glb|gltf|fbx|mp3|woff2?)\b/i);
 });
@@ -24,6 +29,7 @@ test('presentation modules keep procedural effects and native accessibility hook
   assert.equal(typeof screens.Screens, 'function');
   assert.equal(typeof props.createObstacleVisual, 'function');
   assert.match(await import('../src/ui/Screens.js').then(() => readFileSync(new URL('../src/ui/Screens.js', import.meta.url), 'utf8')), /\.onclick/);
+  assert.match(readFileSync(new URL('../src/ui/Screens.js', import.meta.url), 'utf8'), /flying-ribbon|cloud-motif/);
   assert.match(readFileSync(new URL('../src/ui/Hud.js', import.meta.url), 'utf8'), /danger-active/);
 });
 
