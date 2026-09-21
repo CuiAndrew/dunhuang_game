@@ -186,10 +186,17 @@ export class Runner {
     this.jumpElapsed = 0;
     this.verticalOffset = 0;
     this.jumpBufferRemaining = 0;
+    this.coyoteRemaining = 0;
   }
 
   _updateActionState(dt) {
     const runner = this.config.runner;
+    if (this.state === RUNNER_STATES.RUN) {
+      this.coyoteRemaining = runner.coyoteTime;
+    } else {
+      this.coyoteRemaining = Math.max(0, this.coyoteRemaining - dt);
+    }
+    this.jumpBufferRemaining = Math.max(0, this.jumpBufferRemaining - dt);
     if (this.laneElapsed < runner.laneChangeTime) {
       this.laneElapsed = Math.min(runner.laneChangeTime, this.laneElapsed + dt);
       const progress = this.laneElapsed / runner.laneChangeTime;
@@ -230,10 +237,7 @@ export class Runner {
     }
 
     if (this.state === RUNNER_STATES.RUN && this.jumpBufferRemaining > 0) {
-      this.jumpBufferRemaining = Math.max(0, this.jumpBufferRemaining - dt);
-      if (this.jumpBufferRemaining > 0) {
-        this._startJump();
-      }
+      this._startJump();
     }
   }
 }
