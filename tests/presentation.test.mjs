@@ -49,3 +49,12 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   assert.match(main, /pursuer\.consumeRoarCue\(\).*sfx\.play\('roar'\)/s);
   assert.match(main, /next !== GAME_STATES\.PLAYING\) sfx\.setDanger\(false\)/);
 });
+
+test('main passes the active theme factories to every pooled visual system', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /theme\.createPursuerVisual/);
+  assert.match(main, /theme\.createObstacleVisual/);
+  assert.match(main, /theme\.createPickupVisual/);
+  assert.match(main, /theme\.createEnvironmentVisual/);
+  assert.match(main, /palette:\s*theme\.palette/);
+});

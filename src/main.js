@@ -1,9 +1,7 @@
 // Boots the Three.js scene, connects its state to the procedural track, and renders the playable preview.
 import * as THREE from 'three';
-import { PALETTE } from './art/Palette.js';
-import { createTextureSet } from './art/Textures.js';
 import { FxSystem } from './art/Fx.js';
-import { createEnvironmentVisual, createObstacleVisual, createPickupVisual, createPursuerVisual } from './art/Props.js';
+import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js';
 import { Sfx } from './audio/Sfx.js?v=20260920-2';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
@@ -29,6 +27,7 @@ const gameShell = document.querySelector('#game-shell');
 const errorPanel = document.querySelector('#error-panel');
 const errorMessage = document.querySelector('#error-message');
 const screenLayer = document.querySelector('#screen-layer');
+const theme = getTheme(DEFAULT_THEME_ID);
 
 function showRuntimeError(error) {
   const message = error instanceof Error ? error.message : String(error);
@@ -51,34 +50,34 @@ try {
   renderer.shadowMap.enabled = true;
 
   const scene = new THREE.Scene();
-  const textures = createTextureSet(THREE, document, PALETTE);
-  scene.background = new THREE.Color(PALETTE.nightTeal);
-  scene.fog = new THREE.Fog(PALETTE.nightTeal, CONFIG.scene.fogNear, CONFIG.scene.fogFar);
+  const textures = theme.createTextures({ THREE, document, config: CONFIG });
+  scene.background = new THREE.Color(theme.scene.backgroundColor);
+  scene.fog = new THREE.Fog(theme.scene.fogColor, CONFIG.scene.fogNear, CONFIG.scene.fogFar);
 
   const camera = new THREE.PerspectiveCamera(CONFIG.camera.fovBase, 1, CONFIG.camera.near, CONFIG.camera.far);
-  const hemisphere = new THREE.HemisphereLight(PALETTE.stoneBlue, PALETTE.sand, CONFIG.scene.ambientIntensity);
+  const hemisphere = new THREE.HemisphereLight(theme.palette.stoneBlue, theme.palette.sand, CONFIG.scene.ambientIntensity);
   scene.add(hemisphere);
 
-  const keyLight = new THREE.DirectionalLight(PALETTE.dunhuangGold, CONFIG.scene.keyLightIntensity);
+  const keyLight = new THREE.DirectionalLight(theme.palette.dunhuangGold, CONFIG.scene.keyLightIntensity);
   keyLight.position.fromArray(CONFIG.scene.keyLightPosition);
   keyLight.shadow.mapSize.set(CONFIG.render.shadowMapSizes[0], CONFIG.render.shadowMapSizes[0]);
   keyLight.castShadow = true;
   scene.add(keyLight);
 
-  const fillLight = new THREE.DirectionalLight(PALETTE.stoneBlue, CONFIG.scene.fillLightIntensity);
+  const fillLight = new THREE.DirectionalLight(theme.palette.stoneBlue, CONFIG.scene.fillLightIntensity);
   fillLight.position.fromArray(CONFIG.scene.fillLightPosition);
   scene.add(fillLight);
 
   const track = new TrackGraph({ Vector3: THREE.Vector3, config: CONFIG });
   track.ensureAhead(0, CONFIG.track.keepAhead);
-  const trackMesh = new TrackMesh({ THREE, track, config: CONFIG, palette: PALETTE });
+  const trackMesh = new TrackMesh({ THREE, track, config: CONFIG, palette: theme.palette });
   trackMesh.material.map = textures.stone;
   trackMesh.material.needsUpdate = true;
   scene.add(trackMesh.root);
   const environment = new EnvironmentSystem({
     config: CONFIG,
     track,
-    createVisual: () => createEnvironmentVisual(THREE, PALETTE),
+    createVisual: () => theme.createEnvironmentVisual({ THREE, config: CONFIG }),
   });
   environment.forEachVisual((visual) => scene.add(visual));
   const sky = new THREE.Mesh(
@@ -92,7 +91,8 @@ try {
     Vector3: THREE.Vector3,
     track,
     config: CONFIG,
-    palette: PALETTE,
+    palette: theme.palette,
+    createVisual: theme.createRunnerVisual,
   });
   scene.add(runner.root);
   const cameraRig = new CameraRig({ camera, Vector3: THREE.Vector3, track, config: CONFIG });
@@ -102,20 +102,20 @@ try {
   const performanceBudget = new PerformanceBudget({ config: CONFIG });
   const score = new Score({ config: CONFIG });
   const sfx = new Sfx({ config: CONFIG });
-  const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: PALETTE });
+  const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: theme.palette });
   const powerUp = new PowerUp({ config: CONFIG });
   const pursuer = new Pursuer({ config: CONFIG });
-  pursuer.visual = createPursuerVisual(THREE, PALETTE);
+  pursuer.visual = theme.createPursuerVisual({ THREE, config: CONFIG });
   scene.add(pursuer.visual);
   const obstacleSpawner = new ObstacleSpawner({
     config: CONFIG,
-    createVisual: () => createObstacleVisual(THREE, PALETTE, CONFIG),
+    createVisual: () => theme.createObstacleVisual({ THREE, config: CONFIG }),
   });
   obstacleSpawner.forEachVisual((visual) => scene.add(visual));
   const pickupSpawner = new PickupSpawner({
     config: CONFIG,
-    createCoinVisual: () => createPickupVisual(THREE, PALETTE, 'COIN'),
-    createPowerUpVisual: (type) => createPickupVisual(THREE, PALETTE, type),
+    createCoinVisual: () => theme.createPickupVisual({ THREE, config: CONFIG, type: 'COIN' }),
+    createPowerUpVisual: (type) => theme.createPickupVisual({ THREE, config: CONFIG, type }),
   });
   const collision = new CollisionSystem({
     config: CONFIG,

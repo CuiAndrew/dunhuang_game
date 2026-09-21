@@ -81,6 +81,27 @@ test('Runner advances along the shared track frame at the configured speed', asy
   assert.equal(runner.root.position.y, CONFIG.scene.runnerBaseHeight);
 });
 
+test('Runner consumes a theme visual factory without changing movement state', async () => {
+  const { Runner } = await import('../src/entities/Runner.js');
+  const calls = [];
+  const visual = { root: new TestNode(), leftLeg: new TestNode(), rightLeg: new TestNode() };
+  visual.root.add(visual.leftLeg, visual.rightLeg);
+  const runner = new Runner({
+    THREE: TEST_THREE,
+    Vector3: TestVector3,
+    track: createTrack(),
+    config: CONFIG,
+    palette: { ochreRed: 0, plaster: 0, dunhuangGold: 0, stoneBlue: 0, ink: 0 },
+    createVisual: (context) => { calls.push(context.config); return visual; },
+  });
+
+  runner.handleAction('LEFT');
+  runner.update(CONFIG.runner.laneChangeTime);
+  assert.equal(calls.length, 1);
+  assert.equal(runner.root, visual.root);
+  assert.equal(runner.laneIndex, 0);
+});
+
 test('Pursuer keeps runner at hit speed and recovers linearly over the penalty window', async () => {
   const { Runner } = await import('../src/entities/Runner.js');
   const { Pursuer } = await import('../src/entities/Pursuer.js');

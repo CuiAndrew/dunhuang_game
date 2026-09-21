@@ -8,11 +8,12 @@ export const RUNNER_STATES = Object.freeze({
 });
 
 export class Runner {
-  constructor({ THREE, Vector3, track, config, palette }) {
+  constructor({ THREE, Vector3, track, config, palette, createVisual = null }) {
     this.THREE = THREE;
     this.track = track;
     this.config = config;
     this.palette = palette;
+    this.createVisual = createVisual;
     this.s = 0;
     this.speed = config.runner.baseSpeed;
     this.speedPenaltyFactor = 1;
@@ -140,6 +141,16 @@ export class Runner {
   }
 
   _buildMesh() {
+    if (this.createVisual) {
+      const visual = this.createVisual({ THREE: this.THREE, config: this.config, palette: this.palette });
+      if (!visual?.root || !visual.leftLeg || !visual.rightLeg) {
+        throw new Error('Runner visual factory must return root, leftLeg and rightLeg nodes.');
+      }
+      this.root = visual.root;
+      this.leftLeg = visual.leftLeg;
+      this.rightLeg = visual.rightLeg;
+      return;
+    }
     const runner = this.config.runner;
     const THREE = this.THREE;
     const body = new THREE.Mesh(
