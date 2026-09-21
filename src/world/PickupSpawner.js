@@ -10,7 +10,7 @@ export class PickupSpawner {
     this.freeCoins = [];
     this.freePowerUps = [];
     for (let index = 0; index < config.spawn.coinPoolSize; index += 1) {
-      this.freeCoins.push({ s: 0, lane: 0, collected: false, visual: createCoinVisual() });
+      this.freeCoins.push({ s: 0, lane: 0, collected: false, magnetFlightRemaining: 0, visual: createCoinVisual() });
     }
     for (let index = 0; index < config.spawn.powerUpPoolSize; index += 1) {
       this.freePowerUps.push({ s: 0, lane: 0, type: 'MAGNET', collected: false, visual: createPowerUpVisual('MAGNET') });
@@ -57,11 +57,17 @@ export class PickupSpawner {
     }
   }
 
-  collectCoins(runner, onCollect) {
-    const radius = this.config.powerUp.magnetRadius;
+  collectCoins(runner, onCollect, { magnetActive = false } = {}) {
+    const radius = magnetActive ? this.config.powerUp.magnetRadius : this.config.spawn.coinCollectRadius;
     for (const coin of this.coins) {
       const laneOffset = this.config.laneOffsets[coin.lane];
-      if (!coin.collected && Math.abs(coin.s - runner.s) <= radius && Math.abs(laneOffset - runner.lateral) <= radius) {
+      if (coin.collected || coin.magnetFlightRemaining > 0) continue;
+      if (Math.abs(coin.s - runner.s) <= radius && Math.abs(laneOffset - runner.lateral) <= radius) {
+        if (magnetActive && (Math.abs(coin.s - runner.s) > this.config.spawn.coinCollectRadius
+          || Math.abs(laneOffset - runner.lateral) > this.config.spawn.coinCollectRadius)) {
+          coin.magnetFlightRemaining = this.config.powerUp.magnetFlightDuration;
+          continue;
+        }
         coin.collected = true;
         coin.visual && (coin.visual.visible = false);
         onCollect(coin);
@@ -69,10 +75,22 @@ export class PickupSpawner {
     }
   }
 
+  updateMagnetFlights(runner, dt, onCollect) {
+    for (const coin of this.coins) {
+      if (coin.collected || coin.magnetFlightRemaining <= 0) continue;
+      coin.magnetFlightRemaining = Math.max(0, coin.magnetFlightRemaining - dt);
+      if (coin.magnetFlightRemaining <= 0) {
+        coin.collected = true;
+        coin.visual && (coin.visual.visible = false);
+        onCollect(coin, runner);
+      }
+    }
+  }
+
   collectPowerUps(runner, onCollect) {
     for (const powerUp of this.powerUps) {
       const laneOffset = this.config.laneOffsets[powerUp.lane];
-      if (!powerUp.collected && Math.abs(powerUp.s - runner.s) <= this.config.powerUp.magnetRadius && Math.abs(laneOffset - runner.lateral) <= this.config.powerUp.magnetRadius) {
+      if (!powerUp.collected && Math.abs(powerUp.s - runner.s) <= this.config.spawn.coinCollectRadius && Math.abs(laneOffset - runner.lateral) <= this.config.spawn.coinCollectRadius) {
         powerUp.collected = true;
         powerUp.visual && (powerUp.visual.visible = false);
         onCollect(powerUp);
@@ -133,6 +151,7 @@ export class PickupSpawner {
     this.coins[index] = this.coins[last];
     this.coins.pop();
     coin.collected = false;
+    coin.magnetFlightRemaining = 0;
     if (coin.visual) coin.visual.visible = false;
     this.freeCoins.push(coin);
   }

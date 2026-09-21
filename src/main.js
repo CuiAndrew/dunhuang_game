@@ -221,6 +221,11 @@ try {
       pursuer.visual.visible = !pursuer.dead;
       pickupSpawner.ensureAhead(runner.s, CONFIG.track.keepAhead);
       pickupSpawner.recycleBefore(runner.s - CONFIG.track.recycleBehind);
+      pickupSpawner.updateMagnetFlights(runner, dt, (coin) => {
+        score.addCoin();
+        fx.emit(runner.root.position);
+        sfx.play('coin');
+      });
       pickupSpawner.forEachActive((pickup) => {
         if (!pickup.visual) return;
         if (!pickup.visual.parent) scene.add(pickup.visual);
@@ -231,13 +236,17 @@ try {
           pickupFrame.position.y + (pickup.type ? 1.5 : 1.15),
           pickupFrame.position.z + pickupFrame.right.z * CONFIG.laneOffsets[pickup.lane],
         );
+        if (!pickup.type && pickup.magnetFlightRemaining > 0) {
+          const ratio = 1 - pickup.magnetFlightRemaining / CONFIG.powerUp.magnetFlightDuration;
+          pickup.visual.position.lerp(runner.root.position, ratio);
+        }
         pickup.visual.rotation.y += dt * 3;
       });
       pickupSpawner.collectCoins(runner, () => {
         score.addCoin();
         fx.emit(runner.root.position);
         sfx.play('coin');
-      });
+      }, { magnetActive: powerUp.magnetRemaining > 0 });
       pickupSpawner.collectPowerUps(runner, (pickup) => {
         powerUp.activate(pickup.type);
         fx.emit(runner.root.position, 12);

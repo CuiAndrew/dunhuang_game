@@ -40,6 +40,32 @@ test('PickupSpawner keeps coin strings spaced and creates rare power-ups in the 
   assert.ok(spawner.getPowerUpSnapshots().every((item) => item.s >= CONFIG.spawn.powerUpGapMin));
 });
 
+test('PickupSpawner only expands coin collection radius while magnet is active', async () => {
+  const { PickupSpawner } = await import('../src/world/PickupSpawner.js');
+  const spawner = new PickupSpawner({ config: CONFIG, random: () => 0.2 });
+  spawner.ensureAhead(0, 40);
+  const coin = spawner.coins[0];
+  const runner = {
+    s: coin.s + CONFIG.spawn.coinCollectRadius + 0.2,
+    lateral: CONFIG.laneOffsets[coin.lane],
+  };
+  spawner.collectCoins(runner, () => {});
+  assert.equal(coin.collected, false);
+  spawner.collectCoins(runner, () => {}, { magnetActive: true });
+  assert.equal(coin.collected, false);
+  assert.ok(coin.magnetFlightRemaining > 0);
+  let targetCollected = 0;
+  spawner.updateMagnetFlights(runner, CONFIG.powerUp.magnetFlightDuration / 2, (item) => {
+    if (item === coin) targetCollected += 1;
+  });
+  assert.equal(coin.collected, false);
+  spawner.updateMagnetFlights(runner, CONFIG.powerUp.magnetFlightDuration / 2, (item) => {
+    if (item === coin) targetCollected += 1;
+  });
+  assert.equal(coin.collected, true);
+  assert.equal(targetCollected, 1);
+});
+
 test('PickupSpawner keeps active pickups bounded by fixed pools and reuses released slots', async () => {
   const module = await loadModule('../src/world/PickupSpawner.js');
   const spawner = new module.PickupSpawner({ config: CONFIG, random: () => 0.2 });
