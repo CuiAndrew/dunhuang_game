@@ -1,5 +1,59 @@
 // Builds reusable procedural silhouettes for the Dunhuang adapter.
 // Geometry and materials are created while a pooled visual is initialized; variant setters only toggle them.
+const visualCache = new WeakMap();
+
+function getVisualCache(THREE, palette) {
+  let paletteCache = visualCache.get(THREE);
+  if (!paletteCache) {
+    paletteCache = new WeakMap();
+    visualCache.set(THREE, paletteCache);
+  }
+  let cache = paletteCache.get(palette);
+  if (!cache) {
+    cache = {};
+    paletteCache.set(palette, cache);
+  }
+  return cache;
+}
+
+function variantMap(root, names) {
+  return new Map(names.map((name) => [name, root.getObjectByName(name.toLowerCase())]));
+}
+
+function attachObstacleApi(root, names, config) {
+  const variants = variantMap(root, names);
+  root.userData.config = config;
+  root.setType = (type) => {
+    const activeType = variants.has(type) ? type : 'LOW_BARRIER';
+    for (const [name, variant] of variants) variant.visible = name === activeType;
+    root.visible = true;
+    root.userData.obstacleType = activeType;
+    root.userData.heightOffset = variants.get(activeType).userData.heightOffset;
+  };
+  return root;
+}
+
+function attachPickupApi(root, names) {
+  const variants = variantMap(root, names);
+  root.setType = (nextType) => {
+    const activeType = variants.has(nextType) ? nextType : 'COIN';
+    for (const [name, variant] of variants) variant.visible = name === activeType;
+    root.visible = true;
+    root.userData.kind = activeType;
+  };
+  return root;
+}
+
+function attachEnvironmentApi(root, names) {
+  const variants = variantMap(root, names);
+  root.setKind = (kind) => {
+    const activeKind = variants.has(kind) ? kind : 'DUNE';
+    for (const [name, variant] of variants) variant.visible = name === activeKind;
+    root.userData.activeKind = activeKind;
+  };
+  return root;
+}
+
 export function createRunnerVisual(THREE, palette, config) {
   const runner = config.runner;
   const root = new THREE.Group();
@@ -53,6 +107,14 @@ export function createRunnerVisual(THREE, palette, config) {
 }
 
 export function createObstacleVisual(THREE, palette, config) {
+  const cache = getVisualCache(THREE, palette);
+  const variantNames = ['BEAM', 'PILLAR', 'FIRE', 'GAP', 'LOW_BARRIER'];
+  if (cache.obstacle) {
+    const root = cache.obstacle.clone(true);
+    root.name = 'dunhuang-obstacle';
+    root.visible = false;
+    return attachObstacleApi(root, variantNames, config);
+  }
   const root = new THREE.Group();
   root.name = 'dunhuang-obstacle';
   root.userData.config = config;
@@ -116,15 +178,10 @@ export function createObstacleVisual(THREE, palette, config) {
   barrierLegRight.position.set(0.88, -0.22, 0);
   addVariant('LOW_BARRIER', [barrier, barrierTop, barrierLegLeft, barrierLegRight], 0.4);
 
-  root.setType = (type) => {
-    const activeType = variants.has(type) ? type : 'LOW_BARRIER';
-    for (const [name, variant] of variants) variant.visible = name === activeType;
-    root.visible = true;
-    root.userData.obstacleType = activeType;
-    root.userData.heightOffset = variants.get(activeType).userData.heightOffset;
-  };
+  attachObstacleApi(root, variantNames, config);
   root.setType('LOW_BARRIER');
   root.visible = false;
+  cache.obstacle = root.clone(true);
   return root;
 }
 
@@ -162,6 +219,17 @@ export function createPursuerVisual(THREE, palette) {
 }
 
 export function createPickupVisual(THREE, palette, type = 'COIN') {
+  const cache = getVisualCache(THREE, palette);
+  const variantNames = ['COIN', 'SHIELD', 'BOOST', 'MAGNET'];
+  if (cache.pickup) {
+    const root = cache.pickup.clone(true);
+    root.name = 'dunhuang-pickup';
+    root.visible = false;
+    attachPickupApi(root, variantNames);
+    root.setType(type);
+    root.visible = false;
+    return root;
+  }
   const root = new THREE.Group();
   root.name = 'dunhuang-pickup';
   const variants = new Map();
@@ -225,18 +293,22 @@ export function createPickupVisual(THREE, palette, type = 'COIN') {
   magnet.children[1].position.y = -0.22;
   addVariant('MAGNET', magnet);
 
-  root.setType = (nextType) => {
-    const activeType = variants.has(nextType) ? nextType : 'COIN';
-    for (const [name, variant] of variants) variant.visible = name === activeType;
-    root.visible = true;
-    root.userData.kind = activeType;
-  };
+  attachPickupApi(root, variantNames);
   root.setType(type);
   root.visible = false;
+  cache.pickup = root.clone(true);
   return root;
 }
 
 export function createEnvironmentVisual(THREE, palette) {
+  const cache = getVisualCache(THREE, palette);
+  const variantNames = ['DUNE', 'TEMPLE', 'CAVE', 'LANTERN', 'FLAG'];
+  if (cache.environment) {
+    const root = cache.environment.clone(true);
+    root.name = 'dunhuang-environment';
+    root.visible = false;
+    return attachEnvironmentApi(root, variantNames);
+  }
   const root = new THREE.Group();
   root.name = 'dunhuang-environment';
   const variants = new Map();
@@ -298,12 +370,9 @@ export function createEnvironmentVisual(THREE, palette) {
   flagTip.rotation.z = -Math.PI / 2;
   make('FLAG', [flagPole, flag, flagTip]);
 
-  root.setKind = (kind) => {
-    const activeKind = variants.has(kind) ? kind : 'DUNE';
-    for (const [name, variant] of variants) variant.visible = name === activeKind;
-    root.userData.activeKind = activeKind;
-  };
+  attachEnvironmentApi(root, variantNames);
   root.setKind('DUNE');
   root.visible = false;
+  cache.environment = root.clone(true);
   return root;
 }

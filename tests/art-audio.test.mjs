@@ -67,16 +67,61 @@ test('Dunhuang visual factories expose recognizable semantic variants', async ()
   beam.setType('BEAM');
   assert.equal(beam.userData.obstacleType, 'BEAM');
   assert.ok(beam.userData.heightOffset > 0);
+  for (const type of ['PILLAR', 'FIRE', 'GAP', 'LOW_BARRIER']) {
+    beam.setType(type);
+    assert.equal(beam.userData.obstacleType, type);
+    assert.ok(beam.userData.heightOffset > 0);
+  }
 
   const coin = props.createPickupVisual(THREE, DUNHUANG_PALETTE, 'COIN');
   assert.equal(coin.userData.kind, 'COIN');
+  for (const type of ['SHIELD', 'BOOST', 'MAGNET']) {
+    coin.setType(type);
+    assert.equal(coin.userData.kind, type);
+  }
   const environment = props.createEnvironmentVisual(THREE, DUNHUANG_PALETTE);
   environment.setKind('TEMPLE');
   assert.equal(environment.userData.activeKind, 'TEMPLE');
+  for (const kind of ['DUNE', 'CAVE', 'LANTERN', 'FLAG']) {
+    environment.setKind(kind);
+    assert.equal(environment.userData.activeKind, kind);
+  }
 
   const runner = props.createRunnerVisual(THREE, DUNHUANG_PALETTE, CONFIG);
   assert.ok(runner.root.children.includes(runner.leftLeg));
   assert.ok(runner.root.children.includes(runner.rightLeg));
+});
+
+test('pooled visual factories share geometry and material resources by theme', async () => {
+  const props = await import('../src/art/Props.js');
+  const firstMesh = (root) => {
+    let mesh = null;
+    root.traverse((node) => {
+      if (!mesh && node.isMesh) mesh = node;
+    });
+    return mesh;
+  };
+  const firstVariantMesh = (root, name) => firstMesh(root.getObjectByName(name.toLowerCase()));
+
+  const obstacleA = props.createObstacleVisual(THREE, DUNHUANG_PALETTE, CONFIG);
+  const obstacleB = props.createObstacleVisual(THREE, DUNHUANG_PALETTE, CONFIG);
+  const pickupA = props.createPickupVisual(THREE, DUNHUANG_PALETTE, 'COIN');
+  const pickupB = props.createPickupVisual(THREE, DUNHUANG_PALETTE, 'COIN');
+  const environmentA = props.createEnvironmentVisual(THREE, DUNHUANG_PALETTE);
+  const environmentB = props.createEnvironmentVisual(THREE, DUNHUANG_PALETTE);
+
+  for (const name of ['BEAM', 'PILLAR', 'FIRE', 'GAP', 'LOW_BARRIER']) {
+    assert.equal(firstVariantMesh(obstacleA, name).geometry, firstVariantMesh(obstacleB, name).geometry);
+    assert.equal(firstVariantMesh(obstacleA, name).material, firstVariantMesh(obstacleB, name).material);
+  }
+  for (const name of ['COIN', 'SHIELD', 'BOOST', 'MAGNET']) {
+    assert.equal(firstVariantMesh(pickupA, name).geometry, firstVariantMesh(pickupB, name).geometry);
+    assert.equal(firstVariantMesh(pickupA, name).material, firstVariantMesh(pickupB, name).material);
+  }
+  for (const name of ['DUNE', 'TEMPLE', 'CAVE', 'LANTERN', 'FLAG']) {
+    assert.equal(firstVariantMesh(environmentA, name).geometry, firstVariantMesh(environmentB, name).geometry);
+    assert.equal(firstVariantMesh(environmentA, name).material, firstVariantMesh(environmentB, name).material);
+  }
 });
 
 test('Sfx gracefully degrades when Web Audio is unavailable', async () => {
