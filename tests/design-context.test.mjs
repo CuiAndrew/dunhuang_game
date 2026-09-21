@@ -50,4 +50,6 @@ test('acceptance record includes gameplay and theme-art evidence', () => {
   assert.match(acceptance, /历史最高分.*新纪录/);
   assert.match(acceptance, /主题替换边界/);
   assert.match(acceptance, /障碍与道具语义形状/);
+  assert.match(acceptance, /main\.js\?v=20260920-12/);
+  assert.match(acceptance, /warn\/error 日志均为空/);
 });
