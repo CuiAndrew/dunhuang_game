@@ -1,14 +1,14 @@
 // Boots the Three.js scene, connects its state to the procedural track, and renders the playable preview.
 import * as THREE from 'three';
 import { FxSystem } from './art/Fx.js';
-import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js';
+import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js?v=20260920-11';
 import { Sfx } from './audio/Sfx.js?v=20260920-2';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
 import { Input } from './core/Input.js';
 import { FixedStepLoop } from './core/Loop.js';
 import { CameraRig } from './entities/CameraRig.js';
-import { Runner } from './entities/Runner.js?v=20260920-2';
+import { Runner } from './entities/Runner.js?v=20260920-11';
 import { Pursuer } from './entities/Pursuer.js?v=20260920-2';
 import { Hud } from './ui/Hud.js?v=20260920-2';
 import { Screens } from './ui/Screens.js?v=20260920-2';

@@ -120,3 +120,11 @@ The voice is concise, active, and in Simplified Chinese: “开始逃亡”, “
 - **Do:** Trace `DESIGN.md` colors into `Palette.js` and `index.html` CSS custom properties by their semantic names.
 - **Don't:** Add external fonts, images, icon libraries, post-processing, or generic dashboard cards.
 - **Don't:** Let a decorative transition delay pause, restart, keyboard focus, or reduced-motion users.
+
+## Runtime theme contract
+
+The 3D art layer is selected through `ThemeRegistry` rather than imported by gameplay systems. A theme definition owns `id`, `palette`, `scene`, and six factories: `createTextures`, `createRunnerVisual`, `createPursuerVisual`, `createObstacleVisual`, `createPickupVisual`, and `createEnvironmentVisual`. The runner factory must return `root`, `leftLeg`, and `rightLeg`; pooled obstacle and pickup visuals retain `setType()` plus their existing `userData` collision metadata.
+
+The shipped `dunhuang` token set maps to mineral-pigment colors in `src/art/Palette.js`: ochre red/cinnabar for the robe and danger, stone blue/green for sky and fabric, bronze/plaster/sand for masonry, Dunhuang gold for rewards and focus, ink for silhouettes, and night teal for the sky/fog. Canvas textures are cached by `themeId:name`, so a future adapter can reuse texture names without sharing the wrong texture instance.
+
+To add a Shanghai Bund version, register a second definition (for example `shanghai-bund`) with its own palette, scene colors, CanvasTexture draw functions, and the same factory signatures. The adapter may replace geometry and materials, but it must not change lane state, obstacle type strings, collision height metadata, pool sizes, or gameplay probabilities. Switching `DEFAULT_THEME_ID` is therefore a visual change at the composition boundary, not a gameplay fork.
