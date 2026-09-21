@@ -86,6 +86,12 @@
       #high-score-display { top: var(--safe-top); left: 50%; transform: translateX(-50%); }
       #power-up-display { bottom: var(--safe-bottom); left: var(--safe-left); min-width: 7rem; background: conic-gradient(var(--dunhuang-gold) var(--power-progress, 0%), rgb(43 31 26 / 67%) 0); }
       #danger-vignette { inset: 0; border: 3rem solid rgb(200 64 47 / 40%); opacity: 0; transition: opacity 120ms linear; }
+      #danger-vignette.danger-active { animation: danger-breathe 0.75s ease-in-out infinite; transform-origin: center; }
+
+      @keyframes danger-breathe {
+        0%, 100% { transform: scale(1); filter: brightness(0.95); }
+        50% { transform: scale(1.012); filter: brightness(1.12); }
+      }
 
       #pause-button, #mute-button {
         position: absolute;
@@ -186,7 +192,7 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; }
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; animation: none !important; }
       }
     </style>
     <script type="importmap">

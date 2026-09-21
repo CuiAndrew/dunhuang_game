@@ -13,6 +13,7 @@ test('art and audio modules expose procedural-only factories', async () => {
   assert.equal(typeof sfx.Sfx, 'function');
   assert.equal(typeof sfx.Sfx.prototype.startAmbient, 'function');
   assert.equal(typeof sfx.Sfx.prototype.stopAmbient, 'function');
+  assert.equal(typeof sfx.Sfx.prototype.setDanger, 'function');
   assert.equal(typeof props.createPursuerVisual, 'function');
   assert.equal(typeof props.createPickupVisual, 'function');
   assert.equal(typeof props.createEnvironmentVisual, 'function');
@@ -89,4 +90,13 @@ test('Sfx maps runner and pursuer events to distinct procedural sound profiles',
     { type: 'sawtooth', startFrequency: 180, endFrequency: 90 },
     { type: 'sawtooth', startFrequency: 90, endFrequency: 42 },
   ]);
+});
+
+test('Sfx tracks danger heartbeat state without requiring Web Audio', async () => {
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const sfx = new Sfx({ config: { audio: {} }, storage: { getItem: () => null, setItem: () => {} } });
+  sfx.setDanger(true);
+  assert.equal(sfx.dangerActive, true);
+  sfx.setDanger(false);
+  assert.equal(sfx.dangerActive, false);
 });

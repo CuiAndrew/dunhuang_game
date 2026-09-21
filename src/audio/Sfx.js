@@ -5,7 +5,9 @@ export class Sfx {
     this.storage = storage;
     this.context = null;
     this.ambientTimer = null;
+    this.dangerTimer = null;
     this.ambientStep = 0;
+    this.dangerActive = false;
     try {
       this.muted = storage?.getItem('dunhuang-run-muted') === 'true';
     } catch {
@@ -23,9 +25,11 @@ export class Sfx {
       }
       await this.context.resume();
       this.startAmbient();
+      this._startDangerHeartbeat();
       return true;
     } catch {
       this.context = null;
+      this._stopDangerHeartbeat();
       return false;
     }
   }
@@ -37,9 +41,26 @@ export class Sfx {
     } catch {
       // Storage can be unavailable in private browsing; audio still works in-memory.
     }
-    if (this.muted) this.stopAmbient();
-    else this.startAmbient();
+    if (this.muted) {
+      this.stopAmbient();
+      this._stopDangerHeartbeat();
+    }
+    else {
+      this.startAmbient();
+      this._startDangerHeartbeat();
+    }
     return this.muted;
+  }
+
+  setDanger(active) {
+    const next = Boolean(active);
+    if (next === this.dangerActive) return;
+    this.dangerActive = next;
+    if (!next) {
+      this._stopDangerHeartbeat();
+      return;
+    }
+    this._startDangerHeartbeat();
   }
 
   startAmbient() {
@@ -66,6 +87,18 @@ export class Sfx {
     this.ambientTimer = null;
   }
 
+  _startDangerHeartbeat() {
+    if (!this.dangerActive || this.muted || !this.context || this.dangerTimer) return;
+    this.dangerTimer = setInterval(() => {
+      if (this.dangerActive && !this.muted) this.play('heartbeat');
+    }, 420);
+  }
+
+  _stopDangerHeartbeat() {
+    if (this.dangerTimer) clearInterval(this.dangerTimer);
+    this.dangerTimer = null;
+  }
+
   play(name) {
     if (this.muted || !this.context) return;
     const audio = this.config.audio;
@@ -81,6 +114,7 @@ export class Sfx {
       jump: { type: 'sine', startFrequency: 320, endFrequency: 560, duration: 0.2 },
       slide: { type: 'sawtooth', startFrequency: 180, endFrequency: 90, duration: 0.18 },
       roar: { type: 'sawtooth', startFrequency: 90, endFrequency: 42, duration: 0.48 },
+      heartbeat: { type: 'sine', startFrequency: 92, endFrequency: 68, duration: 0.12 },
     };
     const profile = profiles[name] ?? { type: 'triangle', startFrequency: 220, endFrequency: 440, duration: 0.18 };
     const oscillator = this.context.createOscillator();

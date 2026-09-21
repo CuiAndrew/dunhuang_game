@@ -15,7 +15,9 @@ export class Hud {
     this.highScore.textContent = `最高分 ${Math.floor(highScore)}`;
     this.powerUp.textContent = powerUp?.label ?? '';
     this.powerUp.style.setProperty('--power-progress', `${Math.max(0, Math.min(1, powerUp?.remainingRatio ?? 0)) * 100}%`);
-    const pursuerRatio = pursuerDistance < 6 ? Math.min(0.72, (6 - pursuerDistance) / 8) : 0;
+    const dangerActive = pursuerDistance < 6;
+    this.danger.classList.toggle('danger-active', dangerActive);
+    const pursuerRatio = dangerActive ? Math.min(0.72, (6 - pursuerDistance) / 8) : 0;
     this.danger.style.opacity = String(Math.max(pursuerRatio, impactRatio));
   }
 

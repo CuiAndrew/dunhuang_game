@@ -259,6 +259,7 @@ try {
       });
       score.updateDistance(runner.s);
     }
+    sfx.setDanger(gameState.current === GAME_STATES.PLAYING && pursuer.distance < CONFIG.pursuer.roarDistance);
     fx.update(dt);
     fx.setSpeedIntensity(Math.max(difficulty, powerUp.boostRemaining > 0 ? 1 : 0));
     fx.speedLines.position.copy(runner.root.position);
