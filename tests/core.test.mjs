@@ -87,9 +87,11 @@ test('index bootstraps Three r169 and exposes accessible application containers'
 
 test('main bootstraps the registered theme instead of importing art factories directly', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const registry = readFileSync(new URL('../src/art/ThemeRegistry.js', import.meta.url), 'utf8');
   assert.match(main, /art\/ThemeRegistry\.js/);
   assert.match(main, /getTheme\(DEFAULT_THEME_ID\)/);
   assert.match(main, /theme\.createTextures/);
   assert.match(main, /textures\[theme\.scene\.skyTextureName\]/);
   assert.match(main, /createVisual:\s*theme\.createRunnerVisual/);
+  assert.match(registry, /ThemeDefinition\.js\?v=20260920-12/);
 });
