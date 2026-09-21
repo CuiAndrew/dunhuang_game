@@ -1,4 +1,44 @@
 // Builds shared procedural obstacle silhouettes so the gameplay layer never depends on binary art assets.
+export function createRunnerVisual(THREE, palette, config) {
+  const runner = config.runner;
+  const root = new THREE.Group();
+  root.name = 'runner';
+  const body = new THREE.Mesh(
+    new THREE.CapsuleGeometry(runner.capsuleRadius, runner.capsuleLength, runner.capsuleCapSegments, runner.capsuleRadialSegments),
+    new THREE.MeshStandardMaterial({ color: palette.ochreRed, roughness: 0.65 }),
+  );
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(runner.headRadius, runner.capsuleRadialSegments, runner.capsuleCapSegments),
+    new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.8 }),
+  );
+  const halo = new THREE.Mesh(
+    new THREE.CircleGeometry(runner.haloRadius, runner.haloSegments),
+    new THREE.MeshBasicMaterial({
+      color: palette.dunhuangGold,
+      transparent: true,
+      opacity: 0.54,
+      side: THREE.DoubleSide,
+    }),
+  );
+  const legGeometry = new THREE.CylinderGeometry(runner.legRadius, runner.legRadius, runner.legLength, runner.capsuleCapSegments);
+  const legMaterial = new THREE.MeshStandardMaterial({ color: palette.stoneBlue, roughness: 0.72 });
+  const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+  const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(runner.shadowRadius, runner.shadowSegments),
+    new THREE.MeshBasicMaterial({ color: palette.ink, transparent: true, opacity: 0.28 }),
+  );
+
+  head.position.set(0, runner.bodyHeight / 2, 0);
+  halo.position.set(0, runner.bodyHeight / 2, runner.bodyDepth);
+  leftLeg.position.set(-runner.legOffset, -runner.legHipHeight, 0);
+  rightLeg.position.set(runner.legOffset, -runner.legHipHeight, 0);
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = -config.scene.runnerBaseHeight + config.track.laneMarkHeight;
+  root.add(shadow, body, head, halo, leftLeg, rightLeg);
+  return { root, leftLeg, rightLeg };
+}
+
 export function createObstacleVisual(THREE, palette, config) {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
