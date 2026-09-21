@@ -68,3 +68,20 @@ test('TrackGraph permits gaps only in high-distance generation and recycles spen
   assert.ok(graph.firstSampleS() >= 200);
   assert.ok(graph.sampleCount() < CONFIG.track.samplePoolSize);
 });
+
+test('TrackGraph reset restores the origin after samples have been recycled', async () => {
+  const module = await loadTrackGraph();
+  assert.ok(module, 'TrackGraph module must exist');
+  const graph = new module.TrackGraph({ Vector3: TestVector3, config: CONFIG, random: () => 0.7 });
+  graph.ensureAhead(600, CONFIG.track.keepAhead);
+  graph.recycleBefore(500);
+  assert.ok(graph.firstSampleS() > 0);
+
+  graph.reset();
+
+  assert.equal(graph.firstSampleS(), 0);
+  assert.equal(graph.trackLength(), 0);
+  assert.equal(graph.sampleCount(), 1);
+  graph.ensureAhead(0, 30);
+  assert.equal(graph.firstSampleS(), 0);
+});

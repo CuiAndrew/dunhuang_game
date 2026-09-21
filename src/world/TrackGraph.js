@@ -83,6 +83,33 @@ export class TrackGraph {
     this.recycleBefore(playerS - this.config.track.recycleBehind);
   }
 
+  reset() {
+    for (let index = 0; index < this.activeSampleCount; index += 1) {
+      const ringIndex = (this.sampleHead + index) % this.capacity;
+      const sample = this.sampleRing[ringIndex];
+      if (sample) this.freeSamples.push(sample);
+      this.sampleRing[ringIndex] = null;
+    }
+    for (let index = 0; index < this.activeSegmentCount; index += 1) {
+      const ringIndex = (this.segmentHead + index) % this.segmentRing.length;
+      const segment = this.segmentRing[ringIndex];
+      if (segment) this.freeSegments.push(segment);
+      this.segmentRing[ringIndex] = null;
+    }
+    this.sampleHead = 0;
+    this.activeSampleCount = 0;
+    this.segmentHead = 0;
+    this.activeSegmentCount = 0;
+    this.totalLength = 0;
+    this.currentX = 0;
+    this.currentY = 0;
+    this.currentZ = 0;
+    this.currentYaw = 0;
+    this.lastWasTurn = false;
+    this.revision += 1;
+    this._appendSample(this._acquireSample(), 0, 0, 0, 0, 0, 0, TRACK_TYPES.START);
+  }
+
   recycleBefore(s) {
     while (this.activeSampleCount > 1 && this._sampleAt(0).s < s) {
       const sample = this._sampleAt(0);

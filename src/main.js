@@ -141,6 +141,7 @@ try {
     onStart: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
     onResume: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
     onRestart: () => {
+      track.reset();
       runner.reset();
       score.reset();
       powerUp.reset();
