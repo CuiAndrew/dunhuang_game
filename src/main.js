@@ -216,6 +216,9 @@ try {
     if (gameState.current === GAME_STATES.PLAYING) {
       collision.update(runner, obstacleSpawner, { invulnerable: powerUp.boostActive });
       pursuer.update(runner, dt);
+      if (pursuer.consumeRoarCue()) {
+        sfx.play('roar');
+      }
       track.evalTrack(pursuer.positionS, pickupFrame);
       pursuer.visual.position.copy(pickupFrame.position);
       pursuer.visual.position.y += 0.05;

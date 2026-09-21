@@ -5,6 +5,7 @@ export class Pursuer {
     this.distance = config.pursuer.startDistance;
     this.dead = false;
     this.speedPenaltyRemaining = 0;
+    this.roarPlayed = false;
     this.visual = createVisual();
     this.positionS = 0;
   }
@@ -13,6 +14,7 @@ export class Pursuer {
     this.distance = this.config.pursuer.startDistance;
     this.dead = false;
     this.speedPenaltyRemaining = 0;
+    this.roarPlayed = false;
   }
 
   update(runner, dt) {
@@ -41,5 +43,15 @@ export class Pursuer {
     if (this.distance <= this.config.pursuer.killDistance) {
       this.dead = true;
     }
+  }
+
+  consumeRoarCue() {
+    if (this.distance >= this.config.pursuer.roarDistance) {
+      this.roarPlayed = false;
+      return false;
+    }
+    if (this.roarPlayed) return false;
+    this.roarPlayed = true;
+    return true;
   }
 }

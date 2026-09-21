@@ -26,6 +26,22 @@ test('Pursuer recovers distance naturally, loses distance on impact and signals 
   assert.equal(runner.speed, CONFIG.runner.baseSpeed * CONFIG.runner.hitSpeedPenalty);
 });
 
+test('Pursuer emits one roar cue when distance first falls below the danger threshold', async () => {
+  const module = await loadModule('../src/entities/Pursuer.js');
+  assert.ok(module, 'Pursuer module must exist');
+
+  const pursuer = new module.Pursuer({ config: CONFIG, createVisual: () => null });
+  pursuer.distance = CONFIG.pursuer.roarDistance + 1;
+  assert.equal(pursuer.consumeRoarCue(), false);
+  pursuer.distance = CONFIG.pursuer.roarDistance - 0.1;
+  assert.equal(pursuer.consumeRoarCue(), true);
+  assert.equal(pursuer.consumeRoarCue(), false);
+  pursuer.distance = CONFIG.pursuer.roarDistance + 1;
+  assert.equal(pursuer.consumeRoarCue(), false);
+  pursuer.distance = CONFIG.pursuer.roarDistance - 0.1;
+  assert.equal(pursuer.consumeRoarCue(), true);
+});
+
 test('PickupSpawner keeps coin strings spaced and creates rare power-ups in the configured window', async () => {
   const module = await loadModule('../src/world/PickupSpawner.js');
   assert.ok(module, 'PickupSpawner module must exist');

@@ -98,6 +98,7 @@ export const CONFIG = Object.freeze({
     maxDistance: 22,
     recoverRate: 1.6,
     hitPushBack: 4.5,
+    roarDistance: 6,
     killDistance: 0,
   },
   spawn: {
