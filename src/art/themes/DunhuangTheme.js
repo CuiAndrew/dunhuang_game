@@ -1,13 +1,13 @@
 // Composes the first production visual theme from the shared Dunhuang palette and procedural factories.
-import { PALETTE } from '../Palette.js?v=20260920-11';
-import { createTextureSet } from '../Textures.js?v=20260920-11';
+import { PALETTE } from '../Palette.js?v=20260920-12';
+import { createTextureSet } from '../Textures.js?v=20260920-12';
 import {
   createEnvironmentVisual as buildEnvironmentVisual,
   createObstacleVisual as buildObstacleVisual,
   createPickupVisual as buildPickupVisual,
   createPursuerVisual as buildPursuerVisual,
   createRunnerVisual as buildRunnerVisual,
-} from '../Props.js?v=20260920-11';
+} from '../Props.js?v=20260920-12';
 
 export const DUNHUANG_THEME = Object.freeze({
   id: 'dunhuang',

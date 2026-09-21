@@ -1,5 +1,5 @@
 // Owns theme registration and keeps runtime theme selection independent from gameplay systems.
-import { DUNHUANG_THEME } from './themes/DunhuangTheme.js?v=20260920-11';
+import { DUNHUANG_THEME } from './themes/DunhuangTheme.js?v=20260920-12';
 import { assertThemeDefinition } from './ThemeDefinition.js';
 
 export const DEFAULT_THEME_ID = 'dunhuang';
