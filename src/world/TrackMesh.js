@@ -1,6 +1,6 @@
 // Draws the active sampled track as one reusable triangle-strip buffer, including visual holes for GAP segments.
 export class TrackMesh {
-  constructor({ THREE, track, config, palette }) {
+  constructor({ THREE, track, config, palette, texture = null }) {
     this.THREE = THREE;
     this.track = track;
     this.config = config;
@@ -20,7 +20,11 @@ export class TrackMesh {
     this.geometry.setAttribute('normal', this.normalAttribute);
     this.geometry.setIndex(this.indexAttribute);
     this.geometry.setDrawRange(0, 0);
-    this.material = new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.85 });
+    this.material = new THREE.MeshStandardMaterial({
+      color: palette.sand ?? palette.plaster,
+      map: texture,
+      roughness: 0.92,
+    });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.matrixAutoUpdate = false;
     this.mesh.updateMatrix();
@@ -29,8 +33,15 @@ export class TrackMesh {
     this.root.add(this.mesh);
     this.laneMarks = [];
     this.rails = [];
-    const markMaterial = new THREE.MeshBasicMaterial({ color: palette.dunhuangGold, transparent: true, opacity: 0.72 });
-    const railMaterial = new THREE.MeshStandardMaterial({ color: palette.bronze, roughness: 0.85 });
+    const markMaterial = new THREE.MeshBasicMaterial({
+      color: palette.muralGold ?? palette.dunhuangGold,
+      transparent: true,
+      opacity: 0.56,
+    });
+    const railMaterial = new THREE.MeshStandardMaterial({
+      color: palette.muralBlue ?? palette.bronze,
+      roughness: 0.9,
+    });
     for (let index = 0; index < config.track.laneMarkCount * 2; index += 1) {
       const mark = new THREE.Mesh(new THREE.BoxGeometry(config.track.laneMarkWidth, config.track.laneMarkHeight, config.track.laneMarkLength), markMaterial);
       mark.visible = false;

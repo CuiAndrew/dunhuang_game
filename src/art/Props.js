@@ -404,7 +404,7 @@ export function createPickupVisual(THREE, palette, type = 'COIN', textures = {})
   return root;
 }
 
-export function createEnvironmentVisual(THREE, palette) {
+export function createEnvironmentVisual(THREE, palette, textures = {}) {
   const cache = getVisualCache(THREE, palette);
   const variantNames = ['DUNE', 'TEMPLE', 'CAVE', 'LANTERN', 'FLAG'];
   if (cache.environment) {
@@ -423,15 +423,15 @@ export function createEnvironmentVisual(THREE, palette) {
     variants.set(kind, variant);
     root.add(variant);
   };
-  const stone = new THREE.MeshStandardMaterial({ color: palette.bronze, roughness: 0.92 });
-  const plaster = new THREE.MeshStandardMaterial({ color: palette.plaster, roughness: 0.88 });
-  const red = new THREE.MeshStandardMaterial({ color: palette.ochreRed, roughness: 0.72 });
-  const gold = new THREE.MeshStandardMaterial({ color: palette.dunhuangGold, emissive: palette.dunhuangGold, emissiveIntensity: 0.12 });
-  const green = new THREE.MeshStandardMaterial({ color: palette.stoneGreen, roughness: 0.8 });
-  const blue = new THREE.MeshStandardMaterial({ color: palette.stoneBlue, roughness: 0.78 });
+  const stone = standardMaterial(THREE, palette, 'muralBlue', 'bronze', { roughness: 0.92 }, textures.stone);
+  const plaster = standardMaterial(THREE, palette, 'paper', 'plaster', { roughness: 0.88 }, textures.paper);
+  const red = standardMaterial(THREE, palette, 'vermilion', 'ochreRed', { roughness: 0.72 }, textures.mural);
+  const gold = standardMaterial(THREE, palette, 'muralGold', 'dunhuangGold', { emissive: color(palette, 'muralGold', 'dunhuangGold'), emissiveIntensity: 0.12 });
+  const green = standardMaterial(THREE, palette, 'turquoise', 'stoneGreen', { roughness: 0.8 });
+  const blue = standardMaterial(THREE, palette, 'muralBlue', 'stoneBlue', { roughness: 0.78 });
   const poleGeometry = new THREE.CylinderGeometry(0.06, 0.08, 4.2, 6);
 
-  const dune = new THREE.Mesh(new THREE.ConeGeometry(4.5, 2.5, 12), new THREE.MeshStandardMaterial({ color: palette.sand, roughness: 1 }));
+  const dune = new THREE.Mesh(new THREE.ConeGeometry(4.5, 2.5, 12), standardMaterial(THREE, palette, 'apricot', 'sand', { roughness: 1 }, textures.sand));
   const duneStripe = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.08, 5, 18, Math.PI), gold);
   dune.position.y = 1.1;
   duneStripe.rotation.x = Math.PI / 2;

@@ -92,6 +92,10 @@ test('main bootstraps the registered theme instead of importing art factories di
   assert.match(main, /getTheme\(DEFAULT_THEME_ID\)/);
   assert.match(main, /theme\.createTextures/);
   assert.match(main, /textures\[theme\.scene\.skyTextureName\]/);
+  assert.match(main, /theme\.scene\.ambientColor/);
+  assert.match(main, /theme\.scene\.keyLightColor/);
+  assert.match(main, /theme\.scene\.fillLightColor/);
+  assert.match(main, /textures\.clouds/);
   assert.match(main, /createVisual:\s*\(context\)\s*=>\s*theme\.createRunnerVisual/);
   assert.match(main, /theme\.createRunnerVisual\(\{\.\.\.context, textures\}\)/);
   assert.match(main, /theme\.createPursuerVisual\(\{ THREE, config: CONFIG, textures \}\)/);

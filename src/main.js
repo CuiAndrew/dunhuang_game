@@ -55,24 +55,22 @@ try {
   scene.fog = new THREE.Fog(theme.scene.fogColor, CONFIG.scene.fogNear, CONFIG.scene.fogFar);
 
   const camera = new THREE.PerspectiveCamera(CONFIG.camera.fovBase, 1, CONFIG.camera.near, CONFIG.camera.far);
-  const hemisphere = new THREE.HemisphereLight(theme.palette.stoneBlue, theme.palette.sand, CONFIG.scene.ambientIntensity);
+  const hemisphere = new THREE.HemisphereLight(theme.scene.ambientColor, theme.palette.sand, CONFIG.scene.ambientIntensity);
   scene.add(hemisphere);
 
-  const keyLight = new THREE.DirectionalLight(theme.palette.dunhuangGold, CONFIG.scene.keyLightIntensity);
+  const keyLight = new THREE.DirectionalLight(theme.scene.keyLightColor, CONFIG.scene.keyLightIntensity);
   keyLight.position.fromArray(CONFIG.scene.keyLightPosition);
   keyLight.shadow.mapSize.set(CONFIG.render.shadowMapSizes[0], CONFIG.render.shadowMapSizes[0]);
   keyLight.castShadow = true;
   scene.add(keyLight);
 
-  const fillLight = new THREE.DirectionalLight(theme.palette.stoneBlue, CONFIG.scene.fillLightIntensity);
+  const fillLight = new THREE.DirectionalLight(theme.scene.fillLightColor, CONFIG.scene.fillLightIntensity);
   fillLight.position.fromArray(CONFIG.scene.fillLightPosition);
   scene.add(fillLight);
 
   const track = new TrackGraph({ Vector3: THREE.Vector3, config: CONFIG });
   track.ensureAhead(0, CONFIG.track.keepAhead);
-  const trackMesh = new TrackMesh({ THREE, track, config: CONFIG, palette: theme.palette });
-  trackMesh.material.map = textures.stone;
-  trackMesh.material.needsUpdate = true;
+  const trackMesh = new TrackMesh({ THREE, track, config: CONFIG, palette: theme.palette, texture: textures.sand });
   scene.add(trackMesh.root);
   const environment = new EnvironmentSystem({
     config: CONFIG,
@@ -86,6 +84,18 @@ try {
     new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide }),
   );
   scene.add(sky);
+  const cloudSky = new THREE.Mesh(
+    new THREE.SphereGeometry(CONFIG.art.skyRadius * 0.997, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
+    new THREE.MeshBasicMaterial({
+      map: textures.clouds,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false,
+      side: THREE.BackSide,
+    }),
+  );
+  cloudSky.rotation.y = Math.PI * 0.14;
+  scene.add(cloudSky);
 
   const runner = new Runner({
     THREE,
