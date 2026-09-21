@@ -19,17 +19,19 @@ export function isObstacleHit(runner, obstacle, config) {
 }
 
 export class CollisionSystem {
-  constructor({ config, onHit }) {
+  constructor({ config, onHit, onSmash = () => {} }) {
     this.config = config;
     this.onHit = onHit;
+    this.onSmash = onSmash;
   }
 
-  update(runner, obstacleSpawner) {
+  update(runner, obstacleSpawner, { invulnerable = false } = {}) {
     for (let index = 0; index < obstacleSpawner.obstacleCount(); index += 1) {
       const obstacle = obstacleSpawner.getObstacleAt(index);
       if (!obstacle.resolved && isObstacleHit(runner, obstacle, this.config)) {
         obstacle.resolved = true;
-        this.onHit(obstacle);
+        if (invulnerable) this.onSmash(obstacle);
+        else this.onHit(obstacle);
       }
     }
   }

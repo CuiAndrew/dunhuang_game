@@ -73,6 +73,41 @@ test('collision action rules forgive near misses but demand jump, slide or lane 
   assert.equal(module.isObstacleHit({ ...baseRunner, verticalOffset: low.height - CONFIG.collision.jumpClearance }, low, CONFIG), false);
 });
 
+test('CollisionSystem smashes an obstacle during an active boost without punishing the pursuer', async () => {
+  const { CollisionSystem } = await import('../src/systems/Collision.js');
+  const obstacle = {
+    s: 20,
+    lane: 1,
+    type: 'PILLAR',
+    height: 3.2,
+    depth: 1.4,
+    resolved: false,
+  };
+  const spawner = {
+    obstacleCount: () => 1,
+    getObstacleAt: () => obstacle,
+  };
+  const runner = {
+    s: obstacle.s,
+    lateral: CONFIG.laneOffsets[obstacle.lane],
+    verticalOffset: 0,
+    collisionHeight: CONFIG.runner.runCollisionHeight,
+  };
+  let hits = 0;
+  let smashes = 0;
+  const collision = new CollisionSystem({
+    config: CONFIG,
+    onHit: () => { hits += 1; },
+    onSmash: () => { smashes += 1; },
+  });
+
+  collision.update(runner, spawner, { invulnerable: true });
+
+  assert.equal(hits, 0);
+  assert.equal(smashes, 1);
+  assert.equal(obstacle.resolved, true);
+});
+
 test('Score totals distance and coins then persists only a new high score', async () => {
   const module = await loadModule('../src/systems/Score.js');
   assert.ok(module, 'Score module must exist');

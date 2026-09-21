@@ -130,6 +130,10 @@ try {
         gameState.transition(GAME_STATES.DEAD);
       }
     },
+    onSmash: () => {
+      fx.emit(runner.root.position, 16);
+      sfx.play('power-up');
+    },
   });
   const hud = new Hud({ root: document.querySelector('#hud') });
   const screens = new Screens({
@@ -207,7 +211,7 @@ try {
       obstacle.visual.rotation.y = Math.atan2(-obstacleFrame.forward.x, obstacleFrame.forward.z);
     }
     if (gameState.current === GAME_STATES.PLAYING) {
-      collision.update(runner, obstacleSpawner);
+      collision.update(runner, obstacleSpawner, { invulnerable: powerUp.boostActive });
       pursuer.update(runner, dt);
       track.evalTrack(pursuer.positionS, pickupFrame);
       pursuer.visual.position.copy(pickupFrame.position);

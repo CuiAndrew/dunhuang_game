@@ -39,4 +39,8 @@ export class PowerUp {
   get speedMultiplier() {
     return this.boostRemaining > 0 ? this.config.powerUp.boostMultiplier : 1;
   }
+
+  get boostActive() {
+    return this.boostRemaining > 0;
+  }
 }

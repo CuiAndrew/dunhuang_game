@@ -89,6 +89,7 @@ test('PowerUp tracks independent timers, one-shot shield and non-stacking boost 
   powerUp.activate('MAGNET');
   powerUp.activate('SHIELD');
   powerUp.activate('BOOST');
+  assert.equal(powerUp.boostActive, true);
   powerUp.update(CONFIG.powerUp.boostDuration / 2);
   powerUp.activate('BOOST');
   assert.equal(powerUp.magnetRemaining > 0, true);
@@ -98,6 +99,7 @@ test('PowerUp tracks independent timers, one-shot shield and non-stacking boost 
   assert.equal(powerUp.consumeShield(), false);
   powerUp.update(CONFIG.powerUp.boostDuration);
   assert.equal(powerUp.boostRemaining, 0);
+  assert.equal(powerUp.boostActive, false);
 });
 
 test('ChunkPool recycles decoration records without growing active storage', async () => {
