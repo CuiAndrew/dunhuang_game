@@ -10,7 +10,7 @@ Design context: `DESIGN.md` is the canonical visual specification. `src/art/Pale
 
 Task 1: complete — static shell, renderer, state machine, fixed-step loop and visible runtime errors are implemented.
 Task 1: Ruling: Added `src/art/Palette.js` during P1 because the binding specification forbids colors outside `Palette.js`, while the P1 scene requires color for fog, lights and road; cost if wrong: Task 6 only needs to extend, not relocate, the canonical palette.
-Task 1: Verification note: Node browser-control kernel exits before browser selection with an environment-level sandbox error (`unbound variable: | TIOCSTI`). Local HTTP reachability, syntax checks, static DOM requirements and all Node tests pass; cost if wrong: a CDN/WebGL runtime error may remain until browser control becomes available.
+Task 1: Verification note: an early browser-control attempt exited before browser selection with an environment-level sandbox error (`unbound variable: | TIOCSTI`); a later in-app Browser smoke run against the CDN r169 build (`main.js?v=20260920-6`) loaded with empty logs and completed `MENU → PLAYING → PAUSED → PLAYING` plus restart. The earlier note is retained as history, not as an unresolved runtime blocker.
 Task 2: complete — pooled arc-length track, road mesh, lane marks, rails, runner and camera are implemented.
 Task 2: Ruling: TrackGraph's zero-heading forward X can be JavaScript `-0`; tests use a geometric tolerance rather than strict signed-zero equality. Cost if wrong: no visual or gameplay difference, but strict sign assertions would create false failures.
 Task 3: complete — keyboard, touch and mouse gesture input plus buffered runner actions are implemented.
@@ -19,3 +19,4 @@ Task 5: complete — pursuer economy, pickup spawning, magnet/shield/boost state
 Task 6: complete — procedural textures, palette, lane/rail props, pursuer and pickup visuals plus reusable decoration pool are implemented.
 Task 7: complete — HUD, menu/pause/result screens, particles, mute-safe SFX and pentatonic ambient loop are implemented.
 Task 8: complete for MVP — automated suite is green, local-browser smoke test passes, and sustained low FPS reduces pixel ratio then disables shadows. Five-minute device profiling remains a release hardening activity rather than a blocker for this prototype.
+Final review: reviewer found no Critical issues. GAP hazards now span all lanes and are checked by track collision; pursuer roar is wired to the <6m threshold; acceptance evidence and runtime dependency wording are synchronized. Deferred release hardening: real desktop/mobile FPS, draw-call, triangle and memory measurements, plus further environment-detail polish.

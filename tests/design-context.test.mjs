@@ -33,6 +33,8 @@ test('feasibility research and delivery plan are checked in', () => {
   assert.match(plan, /技术可行性/);
   assert.match(plan, /交付路线/);
   assert.match(plan, /npm test/);
+  assert.match(plan, /CDN import map/);
+  assert.match(plan, /真实桌面\/移动设备 FPS/);
 });
 
 test('sixteen-point acceptance record is checked in', () => {
@@ -42,4 +44,5 @@ test('sixteen-point acceptance record is checked in', () => {
   assert.equal((acceptance.match(/^\|\s*\d+\s*\|/gm) ?? []).length, 16);
   assert.match(acceptance, /5 分钟/);
   assert.match(acceptance, /真实设备 FPS/);
+  assert.match(acceptance, /MENU.*PLAYING.*PAUSED.*PLAYING/);
 });
