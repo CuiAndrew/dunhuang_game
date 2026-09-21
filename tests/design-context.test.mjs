@@ -47,4 +47,5 @@ test('sixteen-point acceptance record is checked in', () => {
   assert.match(acceptance, /真实设备 FPS/);
   assert.match(acceptance, /MENU.*PLAYING.*PAUSED.*PLAYING/);
   assert.match(acceptance, /可跳跃路线/);
+  assert.match(acceptance, /历史最高分.*新纪录/);
 });
