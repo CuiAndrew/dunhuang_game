@@ -10,8 +10,15 @@ test('theme registry exposes a validated Dunhuang theme and safe fallback', asyn
   assert.equal(theme.id, 'dunhuang');
   assert.equal(fallback, theme);
   assert.deepEqual(listThemeIds(), ['dunhuang']);
-  assert.equal(theme.scene.backgroundColor, PALETTE.nightTeal);
-  assert.equal(theme.scene.fogColor, PALETTE.nightTeal);
+  assert.equal(theme.scene.backgroundColor, PALETTE.caveNight);
+  assert.equal(theme.scene.fogColor, PALETTE.caveNight);
+  assert.equal(theme.scene.skyTextureName, 'sky');
+  assert.equal(typeof theme.scene.ambientColor, 'number');
+  assert.equal(typeof theme.scene.keyLightColor, 'number');
+  assert.equal(typeof theme.scene.fillLightColor, 'number');
+  assert.equal(theme.palette.muralBlue, 0x244B7A);
+  assert.equal(theme.palette.turquoise, 0x3D9B9B);
+  assert.equal(theme.palette.paper, 0xF6E7C8);
   for (const name of [
     'createTextures', 'createRunnerVisual', 'createPursuerVisual',
     'createObstacleVisual', 'createPickupVisual', 'createEnvironmentVisual',

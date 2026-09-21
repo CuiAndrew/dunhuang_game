@@ -1,5 +1,12 @@
 // Defines the single shared Dunhuang color vocabulary for 3D materials and DOM UI.
 export const PALETTE = Object.freeze({
+  muralBlue: 0x244B7A,
+  turquoise: 0x3D9B9B,
+  vermilion: 0xD84B35,
+  apricot: 0xF3C77B,
+  muralGold: 0xE8B23A,
+  paper: 0xF6E7C8,
+  caveNight: 0x172536,
   ochreRed: 0xA63B29,
   cinnabar: 0xC8402F,
   stoneBlue: 0x2E5C8A,

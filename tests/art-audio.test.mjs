@@ -19,7 +19,7 @@ function createCanvasContext() {
   return {
     createLinearGradient: () => ({ addColorStop() {} }),
     fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
-    arc() {}, ellipse() {}, fill() {},
+    arc() {}, ellipse() {}, fill() {}, clearRect() {},
   };
 }
 
@@ -58,6 +58,11 @@ test('texture cache is isolated by theme id but reuses same-theme textures', asy
   const shanghai = createTextureSet(TEST_THREE, TEST_DOCUMENT, PALETTE, 'shanghai-bund');
 
   assert.equal(dunhuangA.sky, dunhuangB.sky);
+  assert.ok(dunhuangA.paper);
+  assert.ok(dunhuangA.clouds);
+  assert.ok(dunhuangA.mural);
+  assert.equal(dunhuangA.paper, dunhuangB.paper);
+  assert.equal(dunhuangA.clouds, dunhuangB.clouds);
   assert.notEqual(dunhuangA.sky, shanghai.sky);
 });
 

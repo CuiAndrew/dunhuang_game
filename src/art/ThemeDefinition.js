@@ -13,7 +13,10 @@ const REQUIRED_PALETTE_KEYS = Object.freeze([
   'dunhuangGold', 'bronze', 'sand', 'plaster', 'ink', 'nightTeal',
 ]);
 
-const REQUIRED_SCENE_KEYS = Object.freeze(['backgroundColor', 'fogColor', 'skyTextureName']);
+const REQUIRED_SCENE_KEYS = Object.freeze([
+  'backgroundColor', 'fogColor', 'skyTextureName',
+  'ambientColor', 'keyLightColor', 'fillLightColor',
+]);
 
 export function assertThemeDefinition(theme) {
   const missing = [];
