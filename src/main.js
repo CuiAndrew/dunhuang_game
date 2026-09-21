@@ -119,6 +119,7 @@ try {
   });
   const collision = new CollisionSystem({
     config: CONFIG,
+    track,
     onHit: () => {
       fx.emit(runner.root.position);
       fx.triggerImpact();

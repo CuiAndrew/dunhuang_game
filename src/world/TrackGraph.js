@@ -75,6 +75,16 @@ export class TrackGraph {
     return snapshots;
   }
 
+  gapStartAt(s) {
+    for (let index = 0; index < this.activeSegmentCount; index += 1) {
+      const segment = this._segmentAt(index);
+      if (segment.type === TRACK_TYPES.GAP && s >= segment.startS && s <= segment.endS) {
+        return segment.startS;
+      }
+    }
+    return null;
+  }
+
   ensureAhead(playerS, distanceAhead) {
     const targetLength = playerS + distanceAhead;
     while (this.totalLength < targetLength) {

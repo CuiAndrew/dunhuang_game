@@ -26,7 +26,11 @@ test('ObstacleSpawner never fills all three lanes in a physical obstacle group',
   const groups = spawner.getGroupSnapshots();
   assert.ok(groups.length > 0);
   for (const group of groups) {
-    assert.ok(group.occupiedLanes.length < CONFIG.laneOffsets.length);
+    if (group.type === 'GAP') {
+      assert.equal(group.occupiedLanes.length, CONFIG.laneOffsets.length);
+    } else {
+      assert.ok(group.occupiedLanes.length < CONFIG.laneOffsets.length);
+    }
   }
 });
 
@@ -45,12 +49,23 @@ test('obstacle catalogue includes a traversable GAP hazard with jump semantics',
   assert.equal(collisionModule.isObstacleHit({ ...runner, verticalOffset: 1.2 }, gap, CONFIG), false);
 });
 
-test('ObstacleSpawner terminates with a constant random source while selecting two lanes', async () => {
+test('ObstacleSpawner terminates with a constant random source while selecting multiple lanes', async () => {
   const { ObstacleSpawner } = await import('../src/world/ObstacleSpawner.js');
   const spawner = new ObstacleSpawner({ config: CONFIG, random: () => 0.8, createVisual: () => null });
   spawner.ensureAhead(0, 80, 1);
-  const group = spawner.getGroupSnapshots().find((item) => item.occupiedLanes.length === 2);
+  const group = spawner.getGroupSnapshots().find((item) => item.occupiedLanes.length >= 2);
   assert.ok(group);
+});
+
+test('ObstacleSpawner makes a GAP group span all lanes so jumping is the only route', async () => {
+  const { ObstacleSpawner } = await import('../src/world/ObstacleSpawner.js');
+  const spawner = new ObstacleSpawner({ config: CONFIG, random: () => 0.99, createVisual: () => null });
+  spawner.ensureAhead(0, 80, 1);
+  const group = spawner.getGroupSnapshots()[0];
+  assert.equal(group.occupiedLanes.length, CONFIG.laneOffsets.length);
+  for (let index = 0; index < spawner.obstacleCount(); index += 1) {
+    assert.equal(spawner.getObstacleAt(index).type, 'GAP');
+  }
 });
 
 test('collision action rules forgive near misses but demand jump, slide or lane change as appropriate', async () => {
@@ -106,6 +121,22 @@ test('CollisionSystem smashes an obstacle during an active boost without punishi
   assert.equal(hits, 0);
   assert.equal(smashes, 1);
   assert.equal(obstacle.resolved, true);
+});
+
+test('CollisionSystem treats a track GAP as a jump hazard across every lane', async () => {
+  const { CollisionSystem } = await import('../src/systems/Collision.js');
+  const track = { gapStartAt: (s) => (s >= 20 && s <= 24 ? 20 : null) };
+  const spawner = { obstacleCount: () => 0, getObstacleAt: () => null };
+  const runner = { s: 22, lateral: 0, verticalOffset: 0, collisionHeight: CONFIG.runner.runCollisionHeight };
+  let hits = 0;
+  const collision = new CollisionSystem({ config: CONFIG, track, onHit: () => { hits += 1; } });
+
+  collision.update(runner, spawner);
+  assert.equal(hits, 1);
+  runner.verticalOffset = 1;
+  runner.s = 23;
+  collision.update(runner, spawner);
+  assert.equal(hits, 1);
 });
 
 test('Score totals distance and coins then persists only a new high score', async () => {

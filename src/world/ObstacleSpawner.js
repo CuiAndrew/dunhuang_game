@@ -49,7 +49,7 @@ export class ObstacleSpawner {
     const snapshots = [];
     for (let index = 0; index < this.activeGroupCount; index += 1) {
       const group = this.activeGroups[index];
-      snapshots.push({ s: group.s, occupiedLanes: group.occupiedLanes.slice(0, group.laneCount) });
+      snapshots.push({ s: group.s, type: group.type, occupiedLanes: group.occupiedLanes.slice(0, group.laneCount) });
     }
     return snapshots;
   }
@@ -110,10 +110,12 @@ export class ObstacleSpawner {
     group.s = this.nextSpawnS;
     group.id = this.groupSerial;
     group.laneCount = 0;
+    group.type = this._pickType();
     this.groupSerial += 1;
 
     let attempts = 0;
-    while (group.laneCount < requestedLaneCount && attempts < 12) {
+    const groupLaneCount = group.type === 'GAP' ? this.config.laneOffsets.length : requestedLaneCount;
+    while (group.laneCount < groupLaneCount && attempts < 12) {
       const lane = Math.floor(this.random() * this.config.laneOffsets.length);
       if (!this._groupContainsLane(group, lane)) {
         group.occupiedLanes[group.laneCount] = lane;
@@ -121,7 +123,7 @@ export class ObstacleSpawner {
       }
       attempts += 1;
     }
-    for (let lane = 0; group.laneCount < requestedLaneCount && lane < this.config.laneOffsets.length; lane += 1) {
+    for (let lane = 0; group.laneCount < groupLaneCount && lane < this.config.laneOffsets.length; lane += 1) {
       if (!this._groupContainsLane(group, lane)) {
         group.occupiedLanes[group.laneCount] = lane;
         group.laneCount += 1;
@@ -133,7 +135,7 @@ export class ObstacleSpawner {
       obstacle.s = group.s;
       obstacle.lane = group.occupiedLanes[index];
       obstacle.groupId = group.id;
-      obstacle.type = this._pickType();
+      obstacle.type = group.type;
       obstacle.height = obstacle.type === 'GAP' ? 0.9 : (obstacle.type === 'PILLAR' ? 3.2 : (obstacle.type === 'BEAM' ? 1.25 : 0.8));
       obstacle.depth = obstacle.type === 'GAP' ? 4 : (obstacle.type === 'PILLAR' ? 1.4 : (obstacle.type === 'BEAM' ? 0.4 : 0.7));
       obstacle.resolved = false;

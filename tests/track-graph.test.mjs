@@ -85,3 +85,14 @@ test('TrackGraph reset restores the origin after samples have been recycled', as
   graph.ensureAhead(0, 30);
   assert.equal(graph.firstSampleS(), 0);
 });
+
+test('TrackGraph identifies whether an arc-length position is inside a GAP segment', async () => {
+  const module = await loadTrackGraph();
+  assert.ok(module, 'TrackGraph module must exist');
+  const graph = new module.TrackGraph({ Vector3: TestVector3, config: CONFIG, random: () => 0.99 });
+  graph.ensureAhead(1000, CONFIG.track.keepAhead);
+  const gap = graph.getSegmentSnapshots().find((segment) => segment.type === 'GAP');
+  assert.ok(gap);
+  assert.equal(graph.gapStartAt(gap.startS + CONFIG.track.gapLength / 2), gap.startS);
+  assert.equal(graph.gapStartAt(0), null);
+});

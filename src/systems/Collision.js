@@ -19,13 +19,16 @@ export function isObstacleHit(runner, obstacle, config) {
 }
 
 export class CollisionSystem {
-  constructor({ config, onHit, onSmash = () => {} }) {
+  constructor({ config, track = null, onHit, onSmash = () => {} }) {
     this.config = config;
+    this.track = track;
     this.onHit = onHit;
     this.onSmash = onSmash;
+    this.activeGapStartS = null;
   }
 
   update(runner, obstacleSpawner, { invulnerable = false } = {}) {
+    this._checkTrackGap(runner, invulnerable);
     for (let index = 0; index < obstacleSpawner.obstacleCount(); index += 1) {
       const obstacle = obstacleSpawner.getObstacleAt(index);
       if (!obstacle.resolved && isObstacleHit(runner, obstacle, this.config)) {
@@ -34,5 +37,26 @@ export class CollisionSystem {
         else this.onHit(obstacle);
       }
     }
+  }
+
+  _checkTrackGap(runner, invulnerable) {
+    if (!this.track?.gapStartAt) return;
+    const gapStartS = this.track.gapStartAt(runner.s);
+    if (gapStartS === null) {
+      this.activeGapStartS = null;
+      return;
+    }
+    if (gapStartS === this.activeGapStartS) return;
+    this.activeGapStartS = gapStartS;
+    if (runner.verticalOffset >= this.config.collision.jumpClearance) return;
+    const gap = {
+      s: runner.s,
+      lane: runner.laneIndex ?? 1,
+      type: 'GAP',
+      height: this.config.collision.jumpClearance,
+      depth: this.config.track.gapLength,
+    };
+    if (invulnerable) this.onSmash(gap);
+    else this.onHit(gap);
   }
 }
