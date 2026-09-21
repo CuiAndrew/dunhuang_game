@@ -4,7 +4,7 @@ import { PALETTE } from './art/Palette.js';
 import { createTextureSet } from './art/Textures.js';
 import { FxSystem } from './art/Fx.js';
 import { createEnvironmentVisual, createObstacleVisual, createPickupVisual, createPursuerVisual } from './art/Props.js';
-import { Sfx } from './audio/Sfx.js';
+import { Sfx } from './audio/Sfx.js?v=20260920-2';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
 import { Input } from './core/Input.js';
@@ -12,7 +12,7 @@ import { FixedStepLoop } from './core/Loop.js';
 import { CameraRig } from './entities/CameraRig.js';
 import { Runner } from './entities/Runner.js';
 import { Pursuer } from './entities/Pursuer.js';
-import { Hud } from './ui/Hud.js';
+import { Hud } from './ui/Hud.js?v=20260920-2';
 import { Screens } from './ui/Screens.js';
 import { CollisionSystem } from './systems/Collision.js';
 import { PowerUp } from './systems/PowerUp.js';
@@ -308,6 +308,7 @@ try {
 
   gameState.subscribe((next) => {
     gameShell.dataset.gameState = next;
+    if (next !== GAME_STATES.PLAYING) sfx.setDanger(false);
     if (next === GAME_STATES.PLAYING) {
       screens.hide();
       loop.paused = false;

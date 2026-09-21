@@ -29,7 +29,10 @@ test('presentation modules keep procedural effects and native accessibility hook
 
 test('main loop routes jump and slide actions through their dedicated sound cues', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /audio\/Sfx\.js\?v=20260920-2/);
+  assert.match(main, /ui\/Hud\.js\?v=20260920-2/);
   assert.match(main, /action === 'JUMP'.*sfx\.play\('jump'\)/s);
   assert.match(main, /action === 'SLIDE'.*sfx\.play\('slide'\)/s);
   assert.match(main, /pursuer\.consumeRoarCue\(\).*sfx\.play\('roar'\)/s);
+  assert.match(main, /next !== GAME_STATES\.PLAYING\) sfx\.setDanger\(false\)/);
 });

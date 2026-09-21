@@ -31,6 +31,7 @@ export class TrackGraph {
     this.currentZ = 0;
     this.currentYaw = 0;
     this.lastWasTurn = false;
+    this.lastWasGap = false;
     this.revision = 0;
     this.result = {
       position: new Vector3(),
@@ -116,6 +117,7 @@ export class TrackGraph {
     this.currentZ = 0;
     this.currentYaw = 0;
     this.lastWasTurn = false;
+    this.lastWasGap = false;
     this.revision += 1;
     this._appendSample(this._acquireSample(), 0, 0, 0, 0, 0, 0, TRACK_TYPES.START);
   }
@@ -256,11 +258,12 @@ export class TrackGraph {
     this.currentYaw = segment.entryYaw + segment.curvature * length;
     this.totalLength = segment.endS;
     this.lastWasTurn = isTurn;
+    this.lastWasGap = isGap;
     this.revision += 1;
   }
 
   _nextType() {
-    if (this.lastWasTurn) {
+    if (this.lastWasTurn || this.lastWasGap) {
       return TRACK_TYPES.STRAIGHT;
     }
 

@@ -96,3 +96,14 @@ test('TrackGraph identifies whether an arc-length position is inside a GAP segme
   assert.equal(graph.gapStartAt(gap.startS + CONFIG.track.gapLength / 2), gap.startS);
   assert.equal(graph.gapStartAt(0), null);
 });
+
+test('TrackGraph does not generate adjacent GAP segments that outlast one jump', async () => {
+  const module = await loadTrackGraph();
+  assert.ok(module, 'TrackGraph module must exist');
+  const graph = new module.TrackGraph({ Vector3: TestVector3, config: CONFIG, random: () => 0.99 });
+  graph.ensureAhead(1000, CONFIG.track.keepAhead);
+  const segments = graph.getSegmentSnapshots().filter((segment) => segment.type === 'GAP');
+  for (let index = 1; index < segments.length; index += 1) {
+    assert.ok(segments[index].startS - segments[index - 1].endS > 0);
+  }
+});

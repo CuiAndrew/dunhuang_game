@@ -100,3 +100,11 @@ test('Sfx tracks danger heartbeat state without requiring Web Audio', async () =
   sfx.setDanger(false);
   assert.equal(sfx.dangerActive, false);
 });
+
+test('Sfx clears danger heartbeat when the game is paused', async () => {
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const sfx = new Sfx({ config: { audio: {} }, storage: { getItem: () => null, setItem: () => {} } });
+  sfx.setDanger(true);
+  sfx.setDanger(false);
+  assert.equal(sfx.dangerTimer, null);
+});

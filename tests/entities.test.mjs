@@ -81,6 +81,43 @@ test('Runner advances along the shared track frame at the configured speed', asy
   assert.equal(runner.root.position.y, CONFIG.scene.runnerBaseHeight);
 });
 
+test('Pursuer keeps runner at hit speed and recovers linearly over the penalty window', async () => {
+  const { Runner } = await import('../src/entities/Runner.js');
+  const { Pursuer } = await import('../src/entities/Pursuer.js');
+  const runner = new Runner({
+    THREE: TEST_THREE,
+    Vector3: TestVector3,
+    track: createTrack(),
+    config: CONFIG,
+    palette: { ochreRed: 0, plaster: 0, dunhuangGold: 0, stoneBlue: 0, ink: 0 },
+  });
+  const pursuer = new Pursuer({ config: CONFIG, createVisual: () => null });
+
+  runner.update(CONFIG.loop.fixedDt);
+  const naturalAtHit = CONFIG.runner.baseSpeed + runner.s * CONFIG.runner.accelPerMeter;
+  pursuer.registerHit(runner);
+  assert.ok(Math.abs(runner.speed / naturalAtHit - CONFIG.runner.hitSpeedPenalty) < 1e-9);
+
+  runner.update(CONFIG.loop.fixedDt);
+  pursuer.update(runner, CONFIG.loop.fixedDt);
+  const naturalAfterFirstPenaltyFrame = CONFIG.runner.baseSpeed + runner.s * CONFIG.runner.accelPerMeter;
+  assert.ok(Math.abs(runner.speed / naturalAfterFirstPenaltyFrame - CONFIG.runner.hitSpeedPenalty) < 1e-9);
+
+  runner.update(CONFIG.loop.fixedDt);
+  pursuer.update(runner, CONFIG.loop.fixedDt);
+  const naturalAfterOneFrame = CONFIG.runner.baseSpeed + runner.s * CONFIG.runner.accelPerMeter;
+  const factorAfterOneFrame = runner.speed / naturalAfterOneFrame;
+  assert.ok(factorAfterOneFrame > CONFIG.runner.hitSpeedPenalty);
+  assert.ok(factorAfterOneFrame < 0.42);
+
+  for (let frame = 1; frame < 72; frame += 1) {
+    runner.update(CONFIG.loop.fixedDt);
+    pursuer.update(runner, CONFIG.loop.fixedDt);
+  }
+  const naturalAfterRecovery = CONFIG.runner.baseSpeed + runner.s * CONFIG.runner.accelPerMeter;
+  assert.ok(Math.abs(runner.speed / naturalAfterRecovery - 1) < 0.01);
+});
+
 test('CameraRig follows the runner from behind and increases FOV with speed', async () => {
   const module = await loadModule('../src/entities/CameraRig.js');
   assert.ok(module, 'CameraRig module must exist');

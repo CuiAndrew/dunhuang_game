@@ -15,6 +15,7 @@ export class Runner {
     this.palette = palette;
     this.s = 0;
     this.speed = config.runner.baseSpeed;
+    this.speedPenaltyFactor = 1;
     this.speedMultiplier = 1;
     this.lateral = 0;
     this.runTime = 0;
@@ -45,6 +46,7 @@ export class Runner {
   reset() {
     this.s = 0;
     this.speed = this.config.runner.baseSpeed;
+    this.speedPenaltyFactor = 1;
     this.speedMultiplier = 1;
     this.lateral = 0;
     this.runTime = 0;
@@ -71,7 +73,7 @@ export class Runner {
       this.config.runner.maxSpeed,
       this.config.runner.baseSpeed + this.s * this.config.runner.accelPerMeter,
     );
-    this.speed = naturalSpeed * this.speedMultiplier;
+    this.speed = naturalSpeed * this.speedMultiplier * this.speedPenaltyFactor;
     this.runTime += dt;
     this._updateActionState(dt);
     this.syncToTrack();

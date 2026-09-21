@@ -29,7 +29,10 @@ export class Pursuer {
     if (this.speedPenaltyRemaining > 0) {
       this.speedPenaltyRemaining = Math.max(0, this.speedPenaltyRemaining - dt);
       const recovery = 1 - this.speedPenaltyRemaining / this.config.runner.hitRecoverTime;
-      runner.speed = runner.speed * (1 - recovery * (1 - this.config.runner.hitSpeedPenalty));
+      runner.speedPenaltyFactor = this.config.runner.hitSpeedPenalty
+        + recovery * (1 - this.config.runner.hitSpeedPenalty);
+    } else {
+      runner.speedPenaltyFactor = 1;
     }
     if (this.distance <= this.config.pursuer.killDistance) {
       this.dead = true;
@@ -38,6 +41,7 @@ export class Pursuer {
 
   registerHit(runner) {
     this.distance -= this.config.pursuer.hitPushBack;
+    runner.speedPenaltyFactor = this.config.runner.hitSpeedPenalty;
     runner.speed *= this.config.runner.hitSpeedPenalty;
     this.speedPenaltyRemaining = this.config.runner.hitRecoverTime;
     if (this.distance <= this.config.pursuer.killDistance) {
