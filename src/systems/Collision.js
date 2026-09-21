@@ -28,27 +28,31 @@ export class CollisionSystem {
   }
 
   update(runner, obstacleSpawner, { invulnerable = false } = {}) {
-    this._checkTrackGap(runner, invulnerable);
+    let penaltyConsumed = this._checkTrackGap(runner, invulnerable);
     for (let index = 0; index < obstacleSpawner.obstacleCount(); index += 1) {
       const obstacle = obstacleSpawner.getObstacleAt(index);
       if (!obstacle.resolved && isObstacleHit(runner, obstacle, this.config)) {
         obstacle.resolved = true;
-        if (invulnerable) this.onSmash(obstacle);
-        else this.onHit(obstacle);
+        if (invulnerable) {
+          this.onSmash(obstacle);
+        } else if (!penaltyConsumed) {
+          this.onHit(obstacle);
+          penaltyConsumed = true;
+        }
       }
     }
   }
 
   _checkTrackGap(runner, invulnerable) {
-    if (!this.track?.gapStartAt) return;
+    if (!this.track?.gapStartAt) return false;
     const gapStartS = this.track.gapStartAt(runner.s);
     if (gapStartS === null) {
       this.activeGapStartS = null;
-      return;
+      return false;
     }
-    if (gapStartS === this.activeGapStartS) return;
+    if (gapStartS === this.activeGapStartS) return false;
     this.activeGapStartS = gapStartS;
-    if (runner.verticalOffset >= this.config.collision.jumpClearance) return;
+    if (runner.verticalOffset >= this.config.collision.jumpClearance) return false;
     const gap = {
       s: runner.s,
       lane: runner.laneIndex ?? 1,
@@ -58,5 +62,6 @@ export class CollisionSystem {
     };
     if (invulnerable) this.onSmash(gap);
     else this.onHit(gap);
+    return true;
   }
 }

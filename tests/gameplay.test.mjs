@@ -139,6 +139,28 @@ test('CollisionSystem treats a track GAP as a jump hazard across every lane', as
   assert.equal(hits, 1);
 });
 
+test('CollisionSystem does not double punish an overlapping track GAP and obstacle', async () => {
+  const { CollisionSystem } = await import('../src/systems/Collision.js');
+  const obstacle = {
+    s: 22,
+    lane: 1,
+    type: 'GAP',
+    height: 0.9,
+    depth: 4,
+    resolved: false,
+  };
+  const track = { gapStartAt: (s) => (s >= 20 && s <= 24 ? 20 : null) };
+  const spawner = { obstacleCount: () => 1, getObstacleAt: () => obstacle };
+  const runner = { s: 22, lateral: CONFIG.laneOffsets[1], verticalOffset: 0, collisionHeight: CONFIG.runner.runCollisionHeight };
+  let hits = 0;
+  const collision = new CollisionSystem({ config: CONFIG, track, onHit: () => { hits += 1; } });
+
+  collision.update(runner, spawner);
+
+  assert.equal(hits, 1);
+  assert.equal(obstacle.resolved, true);
+});
+
 test('Score totals distance and coins then persists only a new high score', async () => {
   const module = await loadModule('../src/systems/Score.js');
   assert.ok(module, 'Score module must exist');
