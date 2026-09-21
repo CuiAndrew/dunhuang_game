@@ -11,7 +11,7 @@ import { TrackGraph } from '../src/world/TrackGraph.js';
 test('five-minute deterministic run keeps world pools bounded and difficulty rising', () => {
   const track = new TrackGraph({ Vector3: THREE.Vector3, config: CONFIG, random: () => 0.31 });
   const runner = new Runner({ THREE, Vector3: THREE.Vector3, track, config: CONFIG, palette: { ochreRed: 0xA63B29, plaster: 0xF0E2C8, dunhuangGold: 0xE8B23A, stoneBlue: 0x2E5C8A, ink: 0x2B1F1A } });
-  const obstacles = new ObstacleSpawner({ config: CONFIG, random: () => 0.8 });
+  const obstacles = new ObstacleSpawner({ config: CONFIG, random: () => 0.79 });
   const pickups = new PickupSpawner({ config: CONFIG, random: () => 0.31 });
   const environment = new EnvironmentSystem({
     config: CONFIG,
