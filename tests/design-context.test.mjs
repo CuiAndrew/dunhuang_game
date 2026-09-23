@@ -51,7 +51,7 @@ test('acceptance record includes gameplay and theme-art evidence', () => {
   const acceptancePath = new URL('../docs/验收记录.md', import.meta.url);
   assert.equal(existsSync(acceptancePath), true);
   const acceptance = readFileSync(acceptancePath, 'utf8');
-  assert.equal((acceptance.match(/^\|\s*\d+\s*\|/gm) ?? []).length, 23);
+  assert.equal((acceptance.match(/^\|\s*\d+\s*\|/gm) ?? []).length, 24);
   assert.match(acceptance, /5 分钟/);
   assert.match(acceptance, /真实设备 FPS/);
   assert.match(acceptance, /MENU.*PLAYING.*PAUSED.*PLAYING/);
@@ -60,10 +60,11 @@ test('acceptance record includes gameplay and theme-art evidence', () => {
   assert.match(acceptance, /主题替换边界/);
   assert.match(acceptance, /障碍与道具语义形状/);
   assert.match(acceptance, /main\.js\?v=20260921-13/);
-  assert.match(acceptance, /main\.js\?v=20260923-2/);
+  assert.match(acceptance, /main\.js\?v=20260923-3/);
   assert.match(acceptance, /本地敦煌插画/);
   assert.match(acceptance, /Q 版/);
   assert.match(acceptance, /PLAYING 自动启动程序化环境音乐/);
   assert.match(acceptance, /PAUSED\/DEAD\/切后台/);
+  assert.match(acceptance, /分数与距离边框留白/);
   assert.match(acceptance, /warn\/error 日志均为空/);
 });

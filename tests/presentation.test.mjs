@@ -34,6 +34,19 @@ test('presentation layer exposes themed art slots and keeps assets theme-control
   assert.doesNotMatch(html, /https?:\/\/[^'"\s]+\.(png|jpe?g|glb|gltf|fbx|mp3|woff2?)\b/i);
 });
 
+test('score and distance artwork keeps a visible vertical gap at the narrow HUD width', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const scoreTop = Number(html.match(/#score-panel\s*\{\s*top:\s*([\d.]+)%/)[1]);
+  const distanceTop = Number(html.match(/#distance-panel\s*\{\s*top:\s*([\d.]+)%/)[1]);
+  const narrowWidth = Number(html.match(/#score-panel, #distance-panel\s*\{\s*left:\s*[\d.]+%;\s*width:\s*([\d.]+)%/)[1]);
+  const scoreArt = readFileSync(new URL('../src/art/assets/hud/score.png', import.meta.url));
+  const artAspect = scoreArt.readUInt32BE(20) / scoreArt.readUInt32BE(16);
+  const scoreHeightPercent = narrowWidth / 100 * (9 / 16) * artAspect * 100;
+  const gapPercent = distanceTop - scoreTop - scoreHeightPercent;
+
+  assert.ok(gapPercent >= 0.75, `artwork should leave at least 0.75% of the 9:16 stage between frames; got ${gapPercent.toFixed(2)}%`);
+});
+
 test('HUD renders live values over the active theme artwork and degrades per missing image', async () => {
   const { Hud } = await import('../src/ui/Hud.js');
   const ids = [
