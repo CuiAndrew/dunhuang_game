@@ -115,7 +115,8 @@ test('result screen exposes historical high score and new-record feedback', () =
 
 test('main loop routes jump and slide actions through their dedicated sound cues', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-  assert.match(main, /audio\/Sfx\.js\?v=20260920-2/);
+  assert.match(main, /audio\/Sfx\.js\?v=20260923-2/);
+  assert.match(main, /audio\/AudioLifecycle\.js\?v=20260923-2/);
   assert.match(main, /ui\/Hud\.js\?v=20260923-1/);
   assert.match(main, /art\/ThemeRegistry\.js\?v=20260923-1/);
   assert.match(main, /art\/AssetLoader\.js\?v=20260923-1/);
@@ -128,7 +129,8 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   assert.match(main, /action === 'JUMP'.*sfx\.play\('jump'\)/s);
   assert.match(main, /action === 'SLIDE'.*sfx\.play\('slide'\)/s);
   assert.match(main, /pursuer\.consumeRoarCue\(\).*sfx\.play\('roar'\)/s);
-  assert.match(main, /next !== GAME_STATES\.PLAYING\) sfx\.setDanger\(false\)/);
+  assert.match(main, /bindAudioLifecycle\(gameState, sfx, GAME_STATES\.PLAYING\)/);
+  assert.doesNotMatch(main, /sfx\.resume\(\); gameState\.transition/);
 });
 
 test('main passes the active theme factories to every pooled visual system', () => {

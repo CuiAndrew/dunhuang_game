@@ -4,10 +4,13 @@ export class Sfx {
     this.config = config;
     this.storage = storage;
     this.context = null;
+    this.paused = true;
     this.ambientTimer = null;
     this.dangerTimer = null;
     this.ambientStep = 0;
     this.dangerActive = false;
+    this.activeVoices = new Set();
+    this.ambientVoices = new Set();
     try {
       this.muted = storage?.getItem('dunhuang-run-muted') === 'true';
     } catch {
@@ -16,22 +19,76 @@ export class Sfx {
   }
 
   async resume() {
+    this.paused = false;
+    let context = this.context;
     try {
       if (!this.context) {
         const host = typeof window === 'undefined' ? globalThis : window;
         const AudioContextClass = host.AudioContext || host.webkitAudioContext;
-        if (!AudioContextClass) return false;
+        if (!AudioContextClass) {
+          this.paused = true;
+          return false;
+        }
         this.context = new AudioContextClass();
+        context = this.context;
       }
-      await this.context.resume();
+      await context.resume();
+      if (this.paused || this.context !== context) {
+        await this._suspendContext(context);
+        return false;
+      }
       this.startAmbient();
       this._startDangerHeartbeat();
       return true;
     } catch {
-      this.context = null;
+      this.paused = true;
+      this.stopAmbient();
       this._stopDangerHeartbeat();
+      this._stopVoices(this.activeVoices);
+      await this._suspendContext(context);
       return false;
     }
+  }
+
+  async pause() {
+    this.paused = true;
+    this.dangerActive = false;
+    this.stopAmbient();
+    this._stopDangerHeartbeat();
+    this._stopVoices(this.activeVoices);
+    await this._suspendContext(this.context);
+    return true;
+  }
+
+  async _suspendContext(context) {
+    if (!context || context.state === 'suspended') return;
+    try {
+      await context.suspend();
+    } catch {
+      // Suspending is best-effort; lifecycle state still prevents new sounds from being scheduled.
+    }
+  }
+
+  _trackVoice(oscillator, collection = this.activeVoices) {
+    this.activeVoices.add(oscillator);
+    collection.add(oscillator);
+    oscillator.onended = () => {
+      this.activeVoices.delete(oscillator);
+      collection.delete(oscillator);
+    };
+  }
+
+  _stopVoices(voices) {
+    for (const oscillator of [...voices]) {
+      try {
+        oscillator.stop();
+      } catch {
+        // An oscillator may have naturally ended between scheduling and cleanup.
+      }
+      this.activeVoices.delete(oscillator);
+      this.ambientVoices.delete(oscillator);
+    }
+    voices.clear();
   }
 
   toggleMute() {
@@ -44,8 +101,8 @@ export class Sfx {
     if (this.muted) {
       this.stopAmbient();
       this._stopDangerHeartbeat();
-    }
-    else {
+      this._stopVoices(this.activeVoices);
+    } else if (!this.paused) {
       this.startAmbient();
       this._startDangerHeartbeat();
     }
@@ -64,10 +121,10 @@ export class Sfx {
   }
 
   startAmbient() {
-    if (this.muted || !this.context || this.ambientTimer) return;
+    if (this.paused || this.muted || !this.context || this.ambientTimer) return;
     const scale = [220, 262, 294, 330, 392];
     this.ambientTimer = setInterval(() => {
-      if (this.muted || !this.context) return;
+      if (this.paused || this.muted || !this.context) return;
       const oscillator = this.context.createOscillator();
       const gain = this.context.createGain();
       const now = this.context.currentTime;
@@ -76,6 +133,7 @@ export class Sfx {
       gain.gain.setValueAtTime(this.config.audio.masterVolume * 0.18, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
       oscillator.connect(gain).connect(this.context.destination);
+      this._trackVoice(oscillator, this.ambientVoices);
       oscillator.start(now);
       oscillator.stop(now + 0.8);
       this.ambientStep += 1;
@@ -85,10 +143,11 @@ export class Sfx {
   stopAmbient() {
     if (this.ambientTimer) clearInterval(this.ambientTimer);
     this.ambientTimer = null;
+    this._stopVoices(this.ambientVoices);
   }
 
   _startDangerHeartbeat() {
-    if (!this.dangerActive || this.muted || !this.context || this.dangerTimer) return;
+    if (this.paused || !this.dangerActive || this.muted || !this.context || this.dangerTimer) return;
     this.dangerTimer = setInterval(() => {
       if (this.dangerActive && !this.muted) this.play('heartbeat');
     }, 420);
@@ -100,7 +159,7 @@ export class Sfx {
   }
 
   play(name) {
-    if (this.muted || !this.context) return;
+    if (this.paused || this.muted || !this.context) return;
     const audio = this.config.audio;
     const profiles = {
       coin: {
@@ -126,6 +185,7 @@ export class Sfx {
     gain.gain.setValueAtTime(audio.masterVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + profile.duration);
     oscillator.connect(gain).connect(this.context.destination);
+    this._trackVoice(oscillator);
     oscillator.start(now);
     oscillator.stop(now + profile.duration + 0.02);
   }

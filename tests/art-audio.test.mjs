@@ -33,6 +33,73 @@ const TEST_THREE = {
   RepeatWrapping: 'repeat',
 };
 
+function createAudioEnvironment({ resumeBarrier = null } = {}) {
+  const contexts = [];
+  class FakeAudioContext {
+    constructor() {
+      this.currentTime = 0;
+      this.state = 'suspended';
+      this.destination = {};
+      this.resumeCalls = 0;
+      this.suspendCalls = 0;
+      this.voices = [];
+      contexts.push(this);
+    }
+
+    createOscillator() {
+      const oscillator = {
+        stopped: false,
+        frequency: {
+          setValueAtTime() {},
+          linearRampToValueAtTime() {},
+        },
+        connect() { return this; },
+        start() {},
+        stop(when) {
+          if (Number.isFinite(when)) {
+            this.scheduledStopAt = when;
+            return;
+          }
+          this.stopped = true;
+          this.onended?.();
+        },
+      };
+      this.voices.push(oscillator);
+      return oscillator;
+    }
+
+    createGain() {
+      return {
+        gain: {
+          setValueAtTime() {},
+          exponentialRampToValueAtTime() {},
+        },
+        connect() { return this; },
+      };
+    }
+
+    async resume() {
+      this.resumeCalls += 1;
+      if (resumeBarrier) await resumeBarrier;
+      this.state = 'running';
+    }
+
+    async suspend() {
+      this.suspendCalls += 1;
+      this.state = 'suspended';
+    }
+  }
+
+  const previousWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext };
+  return {
+    contexts,
+    restore() {
+      globalThis.window = previousWindow;
+    },
+  };
+}
+
 test('art adapters retain procedural fallbacks beside optional local textures', async () => {
   const textures = await import('../src/art/Textures.js');
   const fx = await import('../src/art/Fx.js');
@@ -270,6 +337,7 @@ test('Sfx maps runner and pursuer events to distinct procedural sound profiles',
     storage: { getItem: () => null, setItem: () => {} },
   });
   sfx.context = context;
+  sfx.paused = false;
 
   sfx.play('jump');
   sfx.play('slide');
@@ -297,4 +365,122 @@ test('Sfx clears danger heartbeat when the game is paused', async () => {
   sfx.setDanger(true);
   sfx.setDanger(false);
   assert.equal(sfx.dangerTimer, null);
+});
+
+test('Sfx suspends the audio context and stops music, danger and active voices during pause', async (t) => {
+  t.mock.timers.enable(['setInterval']);
+  const environment = createAudioEnvironment();
+  t.after(() => environment.restore());
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const sfx = new Sfx({
+    config: { audio: { masterVolume: 0.08, coinFrequency: 880, coinEndFrequency: 1320 } },
+    storage: { getItem: () => null, setItem() {} },
+  });
+  t.after(() => { sfx.stopAmbient(); sfx.setDanger(false); });
+
+  assert.equal(await sfx.resume(), true);
+  const context = sfx.context;
+  t.mock.timers.tick(900);
+  sfx.setDanger(true);
+  t.mock.timers.tick(420);
+  sfx.play('jump');
+  assert.ok(context.voices.length >= 3, 'ambient, danger and event tones should be active before pause');
+  assert.ok(sfx.activeVoices.size >= 3, 'scheduled stop times should not release voices before pause');
+
+  await sfx.pause();
+
+  assert.equal(context.state, 'suspended');
+  assert.equal(sfx.ambientTimer, null);
+  assert.equal(sfx.dangerTimer, null);
+  assert.equal(sfx.dangerActive, false);
+  assert.ok(context.voices.every((voice) => voice.stopped), 'pause should stop tones that would otherwise resume later');
+
+  assert.equal(await sfx.resume(), true);
+  assert.equal(context.state, 'running');
+  assert.notEqual(sfx.ambientTimer, null);
+  await sfx.pause();
+});
+
+test('unmuting while paused does not restart the music scheduler or resume audio', async (t) => {
+  t.mock.timers.enable(['setInterval']);
+  const environment = createAudioEnvironment();
+  t.after(() => environment.restore());
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const sfx = new Sfx({ config: { audio: { masterVolume: 0.08 } }, storage: { getItem: () => null, setItem() {} } });
+  t.after(() => { sfx.stopAmbient(); sfx.setDanger(false); });
+
+  await sfx.resume();
+  const context = sfx.context;
+  await sfx.pause();
+  assert.equal(sfx.toggleMute(), true);
+  assert.equal(sfx.toggleMute(), false);
+  const pausedVoiceCount = context.voices.length;
+  sfx.play('jump');
+
+  assert.equal(context.state, 'suspended');
+  assert.equal(context.resumeCalls, 1, 'changing mute while paused must not unlock or resume the context');
+  assert.equal(sfx.ambientTimer, null, 'unmuting must wait for the game to resume');
+  assert.equal(context.voices.length, pausedVoiceCount, 'gameplay sounds must remain disabled while paused');
+});
+
+test('a pending audio resume cannot restart music after a concurrent pause', async (t) => {
+  t.mock.timers.enable(['setInterval']);
+  let releaseResume;
+  const resumeBarrier = new Promise((resolve) => { releaseResume = resolve; });
+  const environment = createAudioEnvironment({ resumeBarrier });
+  t.after(() => environment.restore());
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const sfx = new Sfx({ config: { audio: { masterVolume: 0.08 } }, storage: { getItem: () => null, setItem() {} } });
+  t.after(() => { sfx.stopAmbient(); sfx.setDanger(false); });
+
+  const resumePromise = sfx.resume();
+  const context = sfx.context;
+  const pausePromise = sfx.pause();
+  releaseResume();
+  await Promise.all([resumePromise, pausePromise]);
+
+  assert.equal(context.state, 'suspended');
+  assert.equal(sfx.ambientTimer, null);
+});
+
+test('GameState lifecycle binding pauses outside PLAYING and resumes music on return', async (t) => {
+  t.mock.timers.enable(['setInterval']);
+  const environment = createAudioEnvironment();
+  t.after(() => environment.restore());
+  const { Sfx } = await import('../src/audio/Sfx.js');
+  const { bindAudioLifecycle } = await import('../src/audio/AudioLifecycle.js');
+  const { GAME_STATES, GameState } = await import('../src/core/GameState.js');
+  const sfx = new Sfx({ config: { audio: { masterVolume: 0.08 } }, storage: { getItem: () => null, setItem() {} } });
+  const gameState = new GameState(GAME_STATES.MENU);
+  const unsubscribe = bindAudioLifecycle(gameState, sfx, GAME_STATES.PLAYING);
+  t.after(() => { unsubscribe(); sfx.stopAmbient(); sfx.setDanger(false); });
+
+  gameState.transition(GAME_STATES.PLAYING);
+  await Promise.resolve();
+  const context = sfx.context;
+  assert.equal(context.state, 'running');
+  assert.notEqual(sfx.ambientTimer, null);
+
+  gameState.transition(GAME_STATES.PAUSED);
+  await Promise.resolve();
+  assert.equal(context.state, 'suspended');
+  assert.equal(sfx.ambientTimer, null);
+
+  gameState.transition(GAME_STATES.PLAYING);
+  await Promise.resolve();
+  assert.equal(context.state, 'running');
+  assert.notEqual(sfx.ambientTimer, null);
+
+  sfx.setDanger(true);
+  assert.notEqual(sfx.dangerTimer, null);
+  gameState.transition(GAME_STATES.DEAD);
+  await Promise.resolve();
+  assert.equal(context.state, 'suspended');
+  assert.equal(sfx.ambientTimer, null);
+  assert.equal(sfx.dangerTimer, null);
+
+  gameState.transition(GAME_STATES.PLAYING);
+  await Promise.resolve();
+  assert.equal(context.state, 'running');
+  assert.notEqual(sfx.ambientTimer, null);
 });

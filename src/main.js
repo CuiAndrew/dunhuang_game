@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { FxSystem } from './art/Fx.js';
 import { loadImageTextures } from './art/AssetLoader.js?v=20260923-1';
 import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js?v=20260923-1';
-import { Sfx } from './audio/Sfx.js?v=20260920-2';
+import { bindAudioLifecycle } from './audio/AudioLifecycle.js?v=20260923-2';
+import { Sfx } from './audio/Sfx.js?v=20260923-2';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
 import { Input } from './core/Input.js';
@@ -125,6 +126,7 @@ try {
   const performanceBudget = new PerformanceBudget({ config: CONFIG });
   const score = new Score({ config: CONFIG });
   const sfx = new Sfx({ config: CONFIG });
+  bindAudioLifecycle(gameState, sfx, GAME_STATES.PLAYING);
   const fx = new FxSystem({ THREE, scene, config: CONFIG, palette: theme.palette });
   const powerUp = new PowerUp({ config: CONFIG });
   const pursuer = new Pursuer({ config: CONFIG });
@@ -162,8 +164,8 @@ try {
   });
   const screens = new Screens({
     layer: screenLayer,
-    onStart: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
-    onResume: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
+    onStart: () => { gameState.transition(GAME_STATES.PLAYING); },
+    onResume: () => { gameState.transition(GAME_STATES.PLAYING); },
     onRestart: () => {
       track.reset();
       runner.reset();
@@ -332,7 +334,6 @@ try {
 
   gameState.subscribe((next) => {
     gameShell.dataset.gameState = next;
-    if (next !== GAME_STATES.PLAYING) sfx.setDanger(false);
     if (next === GAME_STATES.PLAYING) {
       screens.hide();
       loop.paused = false;
