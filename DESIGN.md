@@ -57,14 +57,14 @@ components:
 
 ### Creative North Star
 
-The interface should feel like a moving section of a weathered Mogao Cave mural: large Song-style Chinese type sits on plaster, while a square-hole 铜钱印章 acts as the single vivid interactive seal. The 3D world owns spectacle; the UI only frames the chase.
+The interface should feel like a moving section of a weathered Mogao Cave mural: large Song-style Chinese type sits on plaster, while a square-hole 铜钱印章 acts as the single vivid interactive seal. A locally bundled illustrated scene and the 3D gameplay layer share the spectacle; the UI frames the chase.
 
 ### Product context and register
 
 - **Audience and primary job:** Desktop and mobile-browser players start, pause, understand, and replay a three-lane endless run without losing sight of the 3D action.
 - **Target market(s) and evidence:** Chinese-language cultural-action game specified in `敦煌逃亡_AI开发提示词.md`; the build has no region-specific business, payment, or personal-data flow.
 - **Locale(s) and language policy:** Simplified Chinese is the shipped interface language. Controls use concise verbs and the system serif fallback stack must render CJK text without downloading a font.
-- **Usage scene:** Short, replayable sessions on a phone held in landscape or a desktop browser. HUD information is sparse and must stay legible over a moving, high-contrast scene.
+- **Usage scene:** Short, replayable sessions on a phone in portrait or a desktop browser with a centered 9:16 playfield. HUD information is sparse and must stay legible over a moving, high-contrast scene.
 - **Register:** Hybrid. Menus are expressive, mural-like brand surfaces; the in-run HUD is utilitarian and quiet.
 - **Memorable signature:** The start/replay control is a copper-coin seal, echoed by the square-hole coin icon in the HUD.
 - **Restraint:** Only the runner, coins, pursuer eyes, power-ups and the primary action use saturated red, blue or gold. Environmental overlays, panels and secondary controls remain plaster, bronze and ink.
@@ -77,7 +77,7 @@ The interface should feel like a moving section of a weathered Mogao Cave mural:
 
 ## 敦煌 Q 版纸片 UI
 
-The Q-style pass uses rounded silhouettes, oversized semantic marks, and warm paper panels rather than photorealistic assets. `index.html` mirrors the runtime tokens as CSS custom properties: HUD badges use mural blue/turquoise, screens use a paper grain with gold rules, and primary actions use a vermilion seal. Cloud motifs and flying ribbons are procedural CSS decorations; they remain static and low-contrast under `prefers-reduced-motion`. The DOM keeps native buttons, Chinese labels, live-region HUD updates, and the existing screen IDs so interaction and accessibility do not depend on the art treatment.
+The Q-style pass combines rounded silhouettes, locally bundled theme illustrations, oversized semantic marks, and warm paper panels rather than photorealistic assets. `index.html` mirrors the runtime tokens as CSS custom properties: illustrated HUD frames sit over the game, screens use a paper grain with gold rules, and primary actions use a vermilion seal. Cloud motifs and flying ribbons are procedural CSS decorations; they remain static and low-contrast under `prefers-reduced-motion`. The DOM keeps native buttons, Chinese labels, and the existing screen IDs so interaction and accessibility do not depend on image loading.
 
 ## Typography
 
@@ -107,7 +107,7 @@ The primary “开始逃亡” and “再来一次” actions use cinnabar with 
 
 ### Navigation and data display
 
-There is no navigational chrome or persistent table. HUD values use stable tabular digits, always pair an icon with text when meaning could be ambiguous, and update through an `aria-live` status region at a restrained cadence.
+There is no navigational chrome or persistent table. HUD values use stable tabular digits, always pair an icon with text when meaning could be ambiguous, and do not announce per-frame changes to assistive technology.
 
 ### Forms and overlays
 
@@ -115,7 +115,7 @@ No text-entry forms are required. Start, pause and result surfaces are app-owned
 
 ### Iconography
 
-Use inline SVG and procedural geometry only. Icons use 1.5px-equivalent strokes, square-hole coin forms, arrow/key symbols, and clearly labelled mute/pause controls; no icon font or image asset is allowed.
+Use theme-owned local icons and procedural geometry for theme artwork. Icons use 1.5px-equivalent strokes, square-hole coin forms, arrow/key symbols, and clearly labelled mute/pause controls. Decorative images must not replace accessible DOM labels or native controls.
 
 ### Motion
 
@@ -129,14 +129,14 @@ The voice is concise, active, and in Simplified Chinese: “开始逃亡”, “
 
 - **Do:** Let the procedural 3D route be the hero and use UI only to make action, score, danger and replay clear.
 - **Do:** Trace `DESIGN.md` colors into `Palette.js` and `index.html` CSS custom properties by their semantic names.
-- **Don't:** Add external fonts, images, icon libraries, post-processing, or generic dashboard cards.
+- **Don't:** Add remotely hosted fonts, images, models, audio, icon libraries, post-processing, or generic dashboard cards.
 - **Don't:** Let a decorative transition delay pause, restart, keyboard focus, or reduced-motion users.
 
 ## Runtime theme contract
 
-The 3D art layer is selected through `ThemeRegistry` rather than imported by gameplay systems. A theme definition owns `id`, `palette`, `scene`, and six factories: `createTextures`, `createRunnerVisual`, `createPursuerVisual`, `createObstacleVisual`, `createPickupVisual`, and `createEnvironmentVisual`. The runner factory must return `root`, `leftLeg`, and `rightLeg`; pooled obstacle and pickup visuals retain `setType()` plus their existing `userData` collision metadata.
+The art layer is selected through `ThemeRegistry` rather than imported by gameplay systems. A theme definition owns `id`, `palette`, `scene`, an optional local `assets` manifest, and six factories: `createTextures`, `createRunnerVisual`, `createPursuerVisual`, `createObstacleVisual`, `createPickupVisual`, and `createEnvironmentVisual`. `AssetLoader` resolves local manifest URLs once and leaves failed entries null so procedural visuals remain available. The runner factory must return `root`, `leftLeg`, and `rightLeg`; pooled obstacle and pickup visuals retain `setType()` plus their existing `userData` collision metadata.
 
-The shipped `dunhuang` token set maps to mineral-pigment colors in `src/art/Palette.js`: vermilion/cinnabar for the robe and danger, mural blue/turquoise for sky, fabric, and cloud marks, bronze/paper/sand for masonry, mural gold for rewards and focus, ink for silhouettes, and cave night for the sky/fog. Canvas textures (`sky`, `clouds`, `paper`, `mural`, `sand`, `stone`) are cached by `themeId:name`, so a future adapter can reuse texture names without sharing the wrong texture instance.
+The shipped `dunhuang` token set maps to mineral-pigment colors in `src/art/Palette.js`: vermilion/cinnabar for the robe and danger, mural blue/turquoise for sky, fabric, and cloud marks, bronze/paper/sand for masonry, mural gold for rewards and focus, ink for silhouettes, and cave night for the sky/fog. Local images are enumerated only in `DUNHUANG_THEME.assets`; the theme registry and asset loader feed them to scene, runner, prop, and HUD consumers. Canvas textures (`sky`, `clouds`, `paper`, `mural`, `sand`, `stone`) are cached by `themeId:name`, so a future adapter can reuse texture names without sharing the wrong texture instance.
 
 ## 上海外滩替换边界
 

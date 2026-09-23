@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 test('theme registry exposes a validated Dunhuang theme and safe fallback', async () => {
   const { getTheme, listThemeIds } = await import('../src/art/ThemeRegistry.js');
@@ -23,6 +25,28 @@ test('theme registry exposes a validated Dunhuang theme and safe fallback', asyn
     'createTextures', 'createRunnerVisual', 'createPursuerVisual',
     'createObstacleVisual', 'createPickupVisual', 'createEnvironmentVisual',
   ]) assert.equal(typeof theme[name], 'function', `${name} must be a theme factory`);
+});
+
+test('Dunhuang art is exposed as an extensible local theme asset manifest', async () => {
+  const { getTheme } = await import('../src/art/ThemeRegistry.js');
+  const { assets } = getTheme();
+  const localAssetUrls = [
+    assets.background,
+    ...assets.runner.runFrames,
+    assets.runner.jump,
+    assets.runner.slide,
+    assets.props.coin,
+    ...Object.values(assets.props.obstacles),
+    ...Object.values(assets.props.powerUps),
+    ...Object.values(assets.hud),
+  ];
+
+  assert.equal(assets.runner.runFrames.length, 8);
+  assert.equal(new URL(assets.background).protocol, 'file:');
+  for (const assetUrl of localAssetUrls) {
+    assert.equal(new URL(assetUrl).protocol, 'file:', `${assetUrl} must not require a remote host`);
+    assert.equal(existsSync(fileURLToPath(assetUrl)), true, `${assetUrl} must exist locally`);
+  }
 });
 
 test('theme contract reports the first missing visual field', async () => {

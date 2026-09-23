@@ -14,6 +14,8 @@ export class Runner {
     this.config = config;
     this.palette = palette;
     this.createVisual = createVisual;
+    this.visualUpdate = null;
+    this.visualHandlesActionStates = false;
     this.s = 0;
     this.speed = config.runner.baseSpeed;
     this.speedPenaltyFactor = 1;
@@ -65,6 +67,7 @@ export class Runner {
     this.collisionHeight = this.config.runner.runCollisionHeight;
     this.state = RUNNER_STATES.RUN;
     this.root.scale.y = 1;
+    this.visualUpdate?.(0, this.state);
     this.syncToTrack();
   }
 
@@ -78,6 +81,7 @@ export class Runner {
     this.runTime += dt;
     this._updateActionState(dt);
     this.syncToTrack();
+    this.visualUpdate?.(dt, this.state);
     this._animateLegs();
   }
 
@@ -89,6 +93,7 @@ export class Runner {
     this.runTime += dt;
     this.syncToTrack();
     this.root.position.y += Math.sin(this.runTime * this.config.runner.previewSpeed) * this.config.runner.previewBobHeight;
+    this.visualUpdate?.(dt, this.state);
     this._animateLegs();
   }
 
@@ -117,13 +122,15 @@ export class Runner {
       } else {
         this.jumpBufferRemaining = this.config.runner.inputBuffer;
       }
+      this.visualUpdate?.(0, this.state);
       return;
     }
     if (action === 'SLIDE' && this.state === RUNNER_STATES.RUN) {
       this.state = RUNNER_STATES.SLIDE;
       this.slideElapsed = 0;
       this.collisionHeight = this.config.runner.slideCollisionHeight;
-      this.root.scale.y = this.config.runner.slideScaleY;
+      this.root.scale.y = this.visualHandlesActionStates ? 1 : this.config.runner.slideScaleY;
+      this.visualUpdate?.(0, this.state);
     }
   }
 
@@ -149,6 +156,9 @@ export class Runner {
       this.root = visual.root;
       this.leftLeg = visual.leftLeg;
       this.rightLeg = visual.rightLeg;
+      this.visualUpdate = typeof visual.update === 'function' ? visual.update : null;
+      this.visualHandlesActionStates = Boolean(visual.handlesActionStates);
+      this.visualUpdate?.(0, this.state);
       return;
     }
     const runner = this.config.runner;

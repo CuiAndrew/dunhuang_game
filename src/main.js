@@ -1,16 +1,17 @@
 // Boots the Three.js scene, connects its state to the procedural track, and renders the playable preview.
 import * as THREE from 'three';
 import { FxSystem } from './art/Fx.js';
-import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js?v=20260921-13';
+import { loadImageTextures } from './art/AssetLoader.js?v=20260923-1';
+import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js?v=20260923-1';
 import { Sfx } from './audio/Sfx.js?v=20260920-2';
 import { CONFIG } from './core/Config.js';
 import { GAME_STATES, GameState } from './core/GameState.js';
 import { Input } from './core/Input.js';
 import { FixedStepLoop } from './core/Loop.js';
 import { CameraRig } from './entities/CameraRig.js';
-import { Runner } from './entities/Runner.js?v=20260920-12';
+import { Runner } from './entities/Runner.js?v=20260923-1';
 import { Pursuer } from './entities/Pursuer.js?v=20260920-2';
-import { Hud } from './ui/Hud.js?v=20260921-13';
+import { Hud } from './ui/Hud.js?v=20260923-1';
 import { Screens } from './ui/Screens.js?v=20260921-13';
 import { CollisionSystem } from './systems/Collision.js';
 import { PowerUp } from './systems/PowerUp.js';
@@ -19,7 +20,7 @@ import { Score } from './systems/Score.js?v=20260920-2';
 import { PickupSpawner } from './world/PickupSpawner.js';
 import { ObstacleSpawner } from './world/ObstacleSpawner.js';
 import { TrackGraph } from './world/TrackGraph.js?v=20260920-3';
-import { TrackMesh } from './world/TrackMesh.js';
+import { TrackMesh } from './world/TrackMesh.js?v=20260923-1';
 import { EnvironmentSystem } from './world/Environment.js?v=20260920-3';
 
 const canvas = document.querySelector('#game-canvas');
@@ -50,8 +51,17 @@ try {
   renderer.shadowMap.enabled = true;
 
   const scene = new THREE.Scene();
-  const textures = theme.createTextures({ THREE, document, config: CONFIG });
-  scene.background = new THREE.Color(theme.scene.backgroundColor);
+  const hud = new Hud({ root: document.querySelector('#hud'), assets: theme.assets?.hud });
+  const imageTextures = await loadImageTextures(THREE, {
+    background: theme.assets?.background,
+    runner: theme.assets?.runner,
+    props: theme.assets?.props,
+  });
+  const textures = {
+    ...theme.createTextures({ THREE, document, config: CONFIG }),
+    ...imageTextures,
+  };
+  scene.background = imageTextures.background ?? new THREE.Color(theme.scene.backgroundColor);
   scene.fog = new THREE.Fog(theme.scene.fogColor, CONFIG.scene.fogNear, CONFIG.scene.fogFar);
 
   const camera = new THREE.PerspectiveCamera(CONFIG.camera.fovBase, 1, CONFIG.camera.near, CONFIG.camera.far);
@@ -77,25 +87,27 @@ try {
     track,
     createVisual: () => theme.createEnvironmentVisual({ THREE, config: CONFIG, textures }),
   });
-  environment.forEachVisual((visual) => scene.add(visual));
-  const skyTexture = textures[theme.scene.skyTextureName] ?? textures.sky;
-  const sky = new THREE.Mesh(
-    new THREE.SphereGeometry(CONFIG.art.skyRadius, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
-    new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide }),
-  );
-  scene.add(sky);
-  const cloudSky = new THREE.Mesh(
-    new THREE.SphereGeometry(CONFIG.art.skyRadius * 0.997, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
-    new THREE.MeshBasicMaterial({
-      map: textures.clouds,
-      transparent: true,
-      opacity: 0.22,
-      depthWrite: false,
-      side: THREE.BackSide,
-    }),
-  );
-  cloudSky.rotation.y = Math.PI * 0.14;
-  scene.add(cloudSky);
+  if (!imageTextures.background) {
+    environment.forEachVisual((visual) => scene.add(visual));
+    const skyTexture = textures[theme.scene.skyTextureName] ?? textures.sky;
+    const sky = new THREE.Mesh(
+      new THREE.SphereGeometry(CONFIG.art.skyRadius, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
+      new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide }),
+    );
+    scene.add(sky);
+    const cloudSky = new THREE.Mesh(
+      new THREE.SphereGeometry(CONFIG.art.skyRadius * 0.997, CONFIG.art.skyWidthSegments, CONFIG.art.skyHeightSegments),
+      new THREE.MeshBasicMaterial({
+        map: textures.clouds,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false,
+        side: THREE.BackSide,
+      }),
+    );
+    cloudSky.rotation.y = Math.PI * 0.14;
+    scene.add(cloudSky);
+  }
 
   const runner = new Runner({
     THREE,
@@ -148,7 +160,6 @@ try {
       sfx.play('power-up');
     },
   });
-  const hud = new Hud({ root: document.querySelector('#hud') });
   const screens = new Screens({
     layer: screenLayer,
     onStart: () => { sfx.resume(); gameState.transition(GAME_STATES.PLAYING); },
@@ -191,8 +202,9 @@ try {
     },
   });
   function resize() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = gameShell.clientWidth;
+    const height = gameShell.clientHeight;
+    if (!width || !height) return;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
@@ -276,6 +288,7 @@ try {
     fx.speedLines.position.copy(runner.root.position);
     fx.speedLines.rotation.y = runner.root.rotation.y;
     hud.update({
+      score: score.total,
       distance: score.distance,
       coins: score.coins,
       highScore: score.highScore,

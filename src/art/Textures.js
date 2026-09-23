@@ -56,12 +56,42 @@ export function createTextureSet(THREE, doc = document, palette, themeId = 'dunh
     }
   });
   const sand = make('sand', (ctx) => {
-    ctx.fillStyle = css(colors.sand);
+    ctx.fillStyle = css(colors.apricot ?? colors.sand);
     ctx.fillRect(0, 0, size, size);
-    for (let index = 0; index < 3000; index += 1) {
-      const shade = index % 2 === 0 ? 115 : 245;
-      ctx.fillStyle = `rgb(${shade} ${shade - 12} ${shade - 35} / 20%)`;
-      ctx.fillRect((index * 19) % size, (index * 47) % size, 1, 1);
+    const tileSize = size / 4;
+    const stoneTones = ['#E7D0A2', '#D9BD8D', '#E2C99B', '#D3B583'];
+    for (let row = 0; row < 4; row += 1) {
+      const columnCount = row % 2 === 0 ? 4 : 5;
+      for (let column = 0; column < columnCount; column += 1) {
+        const x = column * tileSize;
+        const y = row * tileSize;
+        const offsetX = row % 2 === 0 ? 0 : tileSize / 2;
+        const tileX = x - offsetX;
+        ctx.fillStyle = stoneTones[(row + column) % stoneTones.length];
+        ctx.fillRect(tileX + 1, y + 1, tileSize - 2, tileSize - 2);
+        ctx.strokeStyle = '#72594088';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(tileX + 3, y + 3, tileSize - 6, tileSize - 6);
+
+        const centerX = tileX + tileSize / 2;
+        const centerY = y + tileSize / 2;
+        ctx.strokeStyle = `${css(colors.turquoise ?? colors.stoneGreen)}88`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = `${css(colors.vermilion ?? colors.ochreRed)}88`;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = `${css(colors.muralGold ?? colors.dunhuangGold)}99`;
+        for (let petal = 0; petal < 4; petal += 1) {
+          const angle = petal * Math.PI / 2;
+          ctx.beginPath();
+          ctx.arc(centerX + Math.cos(angle) * 11, centerY + Math.sin(angle) * 11, 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
     }
   });
   const mural = make('mural', (ctx) => {

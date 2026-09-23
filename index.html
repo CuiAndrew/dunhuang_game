@@ -33,7 +33,7 @@
 
       * { box-sizing: border-box; }
 
-      html, body, #game-shell {
+      html, body {
         width: 100%;
         height: 100%;
         min-height: 100%;
@@ -41,8 +41,10 @@
       }
 
       body {
+        display: grid;
+        place-items: center;
         overflow: hidden;
-        background: var(--night-teal);
+        background: radial-gradient(ellipse at center, #35404d 0%, #111a29 75%);
         color: var(--plaster);
         font-family: var(--ui-font);
       }
@@ -58,8 +60,16 @@
 
       #game-shell {
         position: relative;
+        width: min(100vw, 56.25vh, 900px);
+        height: min(100vh, 177.7778vw, 1600px);
+        max-width: 100%;
+        max-height: 100%;
+        aspect-ratio: 9 / 16;
         overflow: hidden;
         isolation: isolate;
+        container-type: inline-size;
+        background: var(--cave-night);
+        box-shadow: 0 0 4rem rgb(0 0 0 / 38%);
       }
 
       #game-canvas, #hud, #screen-layer, #error-panel {
@@ -74,48 +84,101 @@
         touch-action: none;
       }
 
-      #hud { pointer-events: none; }
+      #hud { z-index: 2; pointer-events: none; }
 
-      .hud-value, .hud-power-up {
+      .hud-art-panel {
         position: absolute;
-        z-index: 2;
-        min-height: 2.4rem;
-        padding: 0.62rem 0.85rem 0.62rem 2.15rem;
-        border: 1px solid rgb(232 178 58 / 72%);
-        border-radius: 999px;
+        margin: 0;
+        filter: drop-shadow(0 0.16rem 0.28rem rgb(13 18 28 / 55%));
+      }
+      .hud-art-panel img { display: block; width: 100%; height: auto; }
+      .hud-art-panel[data-art-fallback="true"] {
+        aspect-ratio: 5.6 / 1;
+        min-height: 2.25rem;
+        border: 1px solid rgb(232 178 58 / 84%);
+        border-radius: 0.7rem;
+        background: linear-gradient(115deg, rgb(23 37 54 / 96%), rgb(36 75 122 / 92%));
+        box-shadow: inset 0 0 0 2px rgb(246 231 200 / 10%);
+      }
+      .hud-art-value {
+        position: absolute;
+        inset: 0 7% 0 34%;
+        display: grid;
+        place-items: center;
         color: var(--paper);
-        background: linear-gradient(135deg, rgb(23 37 54 / 92%), rgb(36 75 122 / 82%));
-        box-shadow: 0 0.35rem 1rem rgb(10 18 30 / 28%), inset 0 0 0 1px rgb(246 231 200 / 10%);
-        font: 0.78rem/1.2 var(--utility-font);
-        letter-spacing: 0.05em;
-        text-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+        font: 700 clamp(0.75rem, 3.2cqw, 1.65rem)/1 var(--ui-font);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.035em;
+        text-shadow: 0 2px 0 rgb(0 0 0 / 60%), 0 0 0.7rem rgb(243 199 123 / 55%);
         white-space: nowrap;
       }
-
-      .hud-badge::before {
-        position: absolute;
-        left: 0.78rem;
-        top: 50%;
-        color: var(--apricot);
-        font: 1rem/1 var(--ui-font);
-        transform: translateY(-50%);
+      #profile-panel { top: 0.45%; left: 0.4%; width: 18%; }
+      #profile-panel[data-art-fallback="true"] { aspect-ratio: 398 / 438; min-height: 0; }
+      #profile-panel[data-art-fallback="true"] .profile-copy { position: absolute; inset: auto 0 7%; margin: 0; }
+      .profile-copy {
+        margin: -7% 0 0;
+        color: var(--paper);
+        font: 700 clamp(0.62rem, 2.8cqw, 1.2rem)/1.35 var(--ui-font);
+        letter-spacing: 0.1em;
+        text-align: center;
+        text-shadow: 0 2px 0 rgb(22 25 31 / 85%), 0 0 0.5rem rgb(15 24 39 / 90%);
       }
-      .hud-badge[data-kind="distance"]::before { content: "↝"; }
-      .hud-badge[data-kind="coins"]::before { content: "◈"; color: var(--mural-gold); }
-      .hud-badge[data-kind="score"]::before { content: "✦"; }
-      .hud-badge[data-kind="power-up"]::before { content: "✧"; color: var(--turquoise); }
-
-      #distance-display { top: var(--safe-top); left: var(--safe-left); }
-      #coin-display { top: var(--safe-top); right: var(--safe-right); }
-      #high-score-display { top: var(--safe-top); left: 50%; transform: translateX(-50%); }
+      .profile-copy span { font-size: 0.66em; font-weight: 500; letter-spacing: 0.04em; }
+      #score-panel { top: 0.95%; left: 18.4%; width: 48%; }
+      #distance-panel { top: 4.65%; left: 18.4%; width: 48%; }
+      #score-display { color: #f5d481; font-size: clamp(0.85rem, 4cqw, 2rem); }
+      #coin-panel { top: 1.3%; right: 14%; width: 27%; }
+      #coin-display { inset-inline-start: 38%; font-size: clamp(0.8rem, 3.5cqw, 1.55rem); }
+      .hud-sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
       #power-up-display {
-        bottom: var(--safe-bottom);
-        left: var(--safe-left);
-        min-width: 8.5rem;
-        background: conic-gradient(var(--mural-gold) var(--power-progress, 0%), rgb(23 37 54 / 88%) 0);
+        top: 17%;
+        right: 2.5%;
+        width: 13%;
+        z-index: 2;
+        text-align: center;
+      }
+      #power-up-display[hidden] { display: none; }
+      #power-up-display[data-art-fallback="true"] { aspect-ratio: 1; min-height: 0; }
+      #skill-art { width: 100%; }
+      .hud-power-up-value {
+        display: block;
+        margin: -0.2rem auto 0;
+        padding: 0.18rem 0.25rem;
+        border: 1px solid rgb(232 178 58 / 75%);
+        border-radius: 0.4rem;
+        color: var(--paper);
+        background: rgb(23 37 54 / 88%);
+        font: 700 clamp(0.6rem, 2.4cqw, 1rem)/1.2 var(--ui-font);
+        text-shadow: 0 1px 0 #000;
+      }
+      #swipe-hint { bottom: 6.5%; left: 14%; width: 72%; }
+      #swipe-hint[data-art-fallback="true"] {
+        display: grid;
+        min-height: 2.4rem;
+        place-items: center;
+        aspect-ratio: 6 / 1;
+        border-radius: 0.8rem;
+        color: var(--paper);
+        font: 700 clamp(0.65rem, 2.8cqw, 1.2rem)/1.2 var(--ui-font);
+        text-shadow: 0 1px 2px #111;
+      }
+      #swipe-hint[data-art-fallback="true"]::after { content: "左右滑动　变换跑道"; }
+      #danger-vignette {
+        z-index: 1;
+        border: clamp(0.7rem, 4cqw, 2.5rem) solid rgb(216 75 53 / 28%);
+        opacity: 0;
+        transition: opacity 120ms linear;
       }
       .new-record { color: var(--mural-gold); font-weight: 700; letter-spacing: 0.08em; }
-      #danger-vignette { inset: 0; border: 3rem solid rgb(216 75 53 / 35%); opacity: 0; transition: opacity 120ms linear; }
       #danger-vignette.danger-active { animation: danger-breathe 0.75s ease-in-out infinite; transform-origin: center; }
 
       @keyframes danger-breathe {
@@ -126,22 +189,36 @@
       #pause-button, #mute-button {
         position: absolute;
         z-index: 3;
-        min-width: 2.75rem;
-        min-height: 2.75rem;
-        border: 1px solid var(--mural-gold);
+        display: grid;
+        place-items: center;
+        width: 10%;
+        aspect-ratio: 1;
+        padding: 0;
+        border: 0;
         border-radius: 50%;
         color: var(--paper);
-        background: var(--cave-night);
-        box-shadow: 0 0.35rem 0.8rem rgb(10 18 30 / 30%), inset 0 0 0 1px rgb(61 155 155 / 32%);
+        background: transparent;
         cursor: pointer;
         pointer-events: auto;
         transition: transform 140ms ease, background-color 140ms ease;
       }
-      #pause-button:hover, #mute-button:hover { background: var(--mural-blue); transform: translateY(-1px); }
-      #pause-button { top: calc(var(--safe-top) + 3.3rem); right: var(--safe-right); }
-      #mute-button { bottom: var(--safe-bottom); right: var(--safe-right); }
+      #pause-button img { width: 100%; height: 100%; filter: drop-shadow(0 0.15rem 0.3rem rgb(13 18 28 / 50%)); }
+      #pause-button[data-art-fallback="true"] { border: 1px solid var(--mural-gold); background: rgb(23 37 54 / 90%); font-size: clamp(0.9rem, 4cqw, 1.8rem); }
+      #pause-button[data-art-fallback="true"]::after { content: "Ⅱ"; }
+      #pause-button:hover, #mute-button:hover { transform: translateY(-1px); }
+      #pause-button { top: 0.65%; right: 2.2%; }
+      #mute-button {
+        right: 3%;
+        bottom: 2.1%;
+        width: 8%;
+        border: 1px solid var(--mural-gold);
+        background: rgb(23 37 54 / 86%);
+        box-shadow: 0 0.2rem 0.6rem rgb(10 18 30 / 36%);
+        font: 700 clamp(0.8rem, 3cqw, 1.3rem)/1 var(--ui-font);
+      }
 
       #screen-layer {
+        z-index: 4;
         display: grid;
         place-items: center;
         padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
@@ -289,7 +366,7 @@
       .result-copy, .result-best { margin: 0.8rem 0; color: rgb(43 31 26 / 82%); }
 
       #error-panel {
-        z-index: 4;
+        z-index: 6;
         display: grid;
         place-items: center;
         padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
@@ -314,9 +391,13 @@
       }
 
       @media (max-width: 640px) {
-        .hud-value, .hud-power-up { min-height: 2.15rem; padding: 0.5rem 0.65rem 0.5rem 1.9rem; font-size: 0.68rem; }
-        .hud-badge::before { left: 0.62rem; font-size: 0.86rem; }
-        #pause-button { top: calc(var(--safe-top) + 2.8rem); }
+        .hud-art-value { letter-spacing: 0; }
+        #profile-panel { top: 0.8%; width: 17%; }
+        #score-panel, #distance-panel { left: 17%; width: 50%; }
+        #coin-panel { right: 13%; width: 29%; }
+        #pause-button { top: 0.8%; }
+        #power-up-display { right: 1.5%; width: 15%; }
+        #swipe-hint { bottom: 6.8%; width: 80%; left: 10%; }
         .paper-panel, .title-panel { padding: 1.5rem 1.15rem 1.4rem; }
         .instruction { margin: 1rem auto; font-size: 0.92rem; }
         .seal-button { min-width: 10.5rem; min-height: 3rem; }
@@ -339,13 +420,31 @@
   <body>
     <main id="game-shell" aria-label="敦煌逃亡游戏">
       <canvas id="game-canvas" aria-label="敦煌逃亡 3D 游戏画面"></canvas>
-      <div id="hud" aria-live="polite" aria-atomic="true">
-        <div id="distance-display" class="hud-value hud-badge" data-kind="distance">距离 0 m</div>
-        <div id="coin-display" class="hud-value hud-badge" data-kind="coins">◈ 0</div>
-        <div id="high-score-display" class="hud-value hud-badge" data-kind="score">最高分 0</div>
-        <div id="power-up-display" class="hud-power-up hud-badge" data-kind="power-up"></div>
+      <div id="hud" aria-live="off">
+        <div id="profile-panel" class="hud-art-panel" aria-hidden="true">
+          <img id="portrait-art" alt="" />
+          <p class="profile-copy">飞天·新月<br /><span>踏云而行 · 心向敦煌</span></p>
+        </div>
+        <div id="score-panel" class="hud-art-panel">
+          <img id="score-art" alt="" />
+          <span id="score-display" class="hud-art-value">0</span>
+        </div>
+        <div id="distance-panel" class="hud-art-panel">
+          <img id="distance-art" alt="" />
+          <span id="distance-display" class="hud-art-value">0 米</span>
+        </div>
+        <div id="coin-panel" class="hud-art-panel">
+          <img id="coin-art" alt="" />
+          <span id="coin-display" class="hud-art-value">0</span>
+        </div>
+        <span id="high-score-display" class="hud-sr-only"></span>
+        <div id="power-up-display" class="hud-art-panel" hidden>
+          <img id="skill-art" alt="" />
+          <span id="power-up-label" class="hud-power-up-value"></span>
+        </div>
+        <div id="swipe-hint" class="hud-art-panel" aria-hidden="true"><img id="swipe-art" alt="" /></div>
         <div id="danger-vignette" class="danger-vignette" aria-hidden="true"></div>
-        <button id="pause-button" type="button" aria-label="暂停游戏">Ⅱ</button>
+        <button id="pause-button" type="button" aria-label="暂停游戏"><img id="pause-art" alt="" /></button>
         <button id="mute-button" type="button" aria-label="静音切换">♫</button>
       </div>
       <section id="screen-layer" aria-label="游戏开始界面">
@@ -366,6 +465,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./src/main.js?v=20260921-13"></script>
+    <script type="module" src="./src/main.js?v=20260923-1"></script>
   </body>
 </html>

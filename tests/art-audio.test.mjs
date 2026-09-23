@@ -33,7 +33,7 @@ const TEST_THREE = {
   RepeatWrapping: 'repeat',
 };
 
-test('art and audio modules expose procedural-only factories', async () => {
+test('art adapters retain procedural fallbacks beside optional local textures', async () => {
   const textures = await import('../src/art/Textures.js');
   const fx = await import('../src/art/Fx.js');
   const sfx = await import('../src/audio/Sfx.js');
@@ -64,6 +64,29 @@ test('texture cache is isolated by theme id but reuses same-theme textures', asy
   assert.equal(dunhuangA.paper, dunhuangB.paper);
   assert.equal(dunhuangA.clouds, dunhuangB.clouds);
   assert.notEqual(dunhuangA.sky, shanghai.sky);
+});
+
+test('theme image loader preserves nested assets and falls back per failed image', async () => {
+  const { loadImageTextures } = await import('../src/art/AssetLoader.js');
+  const loaded = [];
+  const loader = {
+    async loadAsync(url) {
+      if (url === 'missing.png') throw new Error('missing local art');
+      const texture = { url, colorSpace: null };
+      loaded.push(texture);
+      return texture;
+    },
+  };
+  const result = await loadImageTextures(TEST_THREE, {
+    background: 'scene.png',
+    runner: { runFrames: ['run-0.png', 'missing.png'], jump: 'jump.png' },
+  }, loader);
+
+  assert.equal(result.background.url, 'scene.png');
+  assert.equal(result.runner.runFrames[0].url, 'run-0.png');
+  assert.equal(result.runner.runFrames[1], null);
+  assert.equal(result.runner.jump.url, 'jump.png');
+  assert.equal(loaded.every((texture) => texture.colorSpace === TEST_THREE.SRGBColorSpace), true);
 });
 
 test('Dunhuang visual factories expose recognizable semantic variants', async () => {
@@ -100,6 +123,58 @@ test('Dunhuang visual factories expose recognizable semantic variants', async ()
   assert.ok(runner.root.getObjectByName('face-mark'));
   const coinHole = coin.getObjectByName('coin-hole');
   assert.ok(coinHole);
+});
+
+test('Dunhuang runner art switches between local run, jump and slide sprites', async () => {
+  const { createRunnerVisual } = await import('../src/art/Props.js');
+  const runFrames = Array.from({ length: 8 }, () => new THREE.Texture());
+  const jump = new THREE.Texture();
+  const slide = new THREE.Texture();
+  const visual = createRunnerVisual(THREE, DUNHUANG_PALETTE, CONFIG, {
+    runner: { runFrames, jump, slide },
+  });
+  const sprite = visual.root.getObjectByName('dunhuang-runner-sprite');
+
+  assert.ok(sprite?.isSprite, 'the art-backed runner should remain a billboard sprite');
+  assert.ok(visual.root.children.includes(visual.leftLeg));
+  assert.ok(visual.root.children.includes(visual.rightLeg));
+  visual.update(0, 'RUN');
+  assert.equal(sprite.material.map, runFrames[0]);
+  visual.update(0.15, 'RUN');
+  assert.notEqual(sprite.material.map, runFrames[0], 'running advances the sprite sequence');
+  visual.update(0.01, 'JUMP');
+  assert.equal(sprite.material.map, jump);
+  visual.update(0.01, 'SLIDE');
+  assert.equal(sprite.material.map, slide);
+});
+
+test('obstacle and pickup art remains inside existing visual variant APIs', async () => {
+  const { createObstacleVisual, createPickupVisual } = await import('../src/art/Props.js');
+  const images = {
+    obstacles: {
+      BEAM: new THREE.Texture(),
+      PILLAR: new THREE.Texture(),
+      FIRE: new THREE.Texture(),
+      LOW_BARRIER: new THREE.Texture(),
+    },
+    coin: new THREE.Texture(),
+    powerUps: {
+      SHIELD: new THREE.Texture(),
+      BOOST: new THREE.Texture(),
+      MAGNET: new THREE.Texture(),
+    },
+  };
+  const palette = Object.freeze({ ...DUNHUANG_PALETTE });
+  const obstacle = createObstacleVisual(THREE, palette, CONFIG, { props: images });
+  const pickup = createPickupVisual(THREE, palette, 'COIN', { props: images });
+
+  obstacle.setType('BEAM');
+  pickup.setType('MAGNET');
+  assert.equal(obstacle.getObjectByName('beam-art').material.map, images.obstacles.BEAM);
+  assert.equal(obstacle.userData.obstacleType, 'BEAM');
+  assert.equal(obstacle.userData.heightOffset, obstacle.getObjectByName('beam').userData.heightOffset);
+  assert.equal(pickup.getObjectByName('MAGNET-art').material.map, images.powerUps.MAGNET);
+  assert.equal(pickup.userData.kind, 'MAGNET');
 });
 
 test('pooled visual factories share geometry and material resources by theme', async () => {

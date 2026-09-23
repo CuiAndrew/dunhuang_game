@@ -81,7 +81,7 @@ test('index bootstraps Three r169 and exposes accessible application containers'
   assert.match(html, /id="error-panel"/);
   assert.match(html, /src="\.\/src\/main\.js(?:\?v=[^"]+)?"/);
   assert.match(html, /src="\.\/src\/main\.js\?v=/);
-  assert.match(html, /src="\.\/src\/main\.js\?v=20260921-13"/);
+  assert.match(html, /src="\.\/src\/main\.js\?v=20260923-1"/);
   assert.match(html, /#screen-layer\[hidden\]\s*\{\s*display:\s*none;/);
 });
 
@@ -91,7 +91,9 @@ test('main bootstraps the registered theme instead of importing art factories di
   assert.match(main, /art\/ThemeRegistry\.js/);
   assert.match(main, /getTheme\(DEFAULT_THEME_ID\)/);
   assert.match(main, /theme\.createTextures/);
-  assert.match(main, /textures\[theme\.scene\.skyTextureName\]/);
+  assert.match(main, /loadImageTextures/);
+  assert.match(main, /theme\.assets/);
+  assert.match(main, /scene\.background\s*=\s*imageTextures\.background/);
   assert.match(main, /theme\.scene\.ambientColor/);
   assert.match(main, /theme\.scene\.keyLightColor/);
   assert.match(main, /theme\.scene\.fillLightColor/);
@@ -100,4 +102,5 @@ test('main bootstraps the registered theme instead of importing art factories di
   assert.match(main, /theme\.createRunnerVisual\(\{\.\.\.context, textures\}\)/);
   assert.match(main, /theme\.createPursuerVisual\(\{ THREE, config: CONFIG, textures \}\)/);
   assert.match(registry, /ThemeDefinition\.js\?v=20260921-13/);
+  assert.match(registry, /themes\/DunhuangTheme\.js\?v=20260923-1/);
 });

@@ -100,7 +100,85 @@ function addFaceMark(THREE, root, palette, runner) {
   return faceMark;
 }
 
+function imageAspect(texture, fallback = 1) {
+  const image = texture?.image;
+  const width = image?.naturalWidth ?? image?.width;
+  const height = image?.naturalHeight ?? image?.height;
+  return width > 0 && height > 0 ? width / height : fallback;
+}
+
+function makeImageSprite(THREE, texture, name, height, fallbackAspect = 1) {
+  if (!texture) return null;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    alphaTest: 0.025,
+    depthWrite: false,
+    toneMapped: false,
+  }));
+  sprite.name = name;
+  sprite.scale.set(height * imageAspect(texture, fallbackAspect), height, 1);
+  return sprite;
+}
+
+function useObstacleSprite(THREE, variant, texture, name, height) {
+  if (!texture) return null;
+  const sprite = makeImageSprite(THREE, texture, `${name}-art`, height, 1.05);
+  sprite.position.y = height / 2 - variant.userData.heightOffset;
+  for (const child of variant.children) child.visible = false;
+  variant.add(sprite);
+  return sprite;
+}
+
 export function createRunnerVisual(THREE, palette, config, textures = {}) {
+  const runFrames = (textures.runner?.runFrames ?? []).filter(Boolean);
+  if (runFrames.length > 0) {
+    const root = new THREE.Group();
+    root.name = 'runner';
+    const sprite = makeImageSprite(THREE, runFrames[0], 'dunhuang-runner-sprite', 2.4, 0.65);
+    sprite.center.set(0.5, 0);
+    sprite.position.y = -config.scene.runnerBaseHeight;
+    const leftLeg = new THREE.Group();
+    const rightLeg = new THREE.Group();
+    leftLeg.name = 'left-leg';
+    rightLeg.name = 'right-leg';
+    leftLeg.visible = false;
+    rightLeg.visible = false;
+    root.add(sprite, leftLeg, rightLeg);
+
+    let state = null;
+    let elapsed = 0;
+    let frameIndex = 0;
+    const setPose = (texture, height) => {
+      const nextTexture = texture ?? runFrames[0];
+      sprite.material.map = nextTexture;
+      sprite.scale.set(height * imageAspect(nextTexture, 0.65), height, 1);
+    };
+    const update = (dt, nextState) => {
+      if (nextState !== state) {
+        state = nextState;
+        elapsed = 0;
+        frameIndex = 0;
+        if (state === 'JUMP') setPose(textures.runner.jump, 2.65);
+        else if (state === 'SLIDE') setPose(textures.runner.slide, 1.45);
+        else setPose(runFrames[0], 2.4);
+      }
+      if (state === 'RUN' && runFrames.length > 1) {
+        elapsed += Math.max(0, dt ?? 0);
+        const frameDuration = 1 / 12;
+        if (elapsed >= frameDuration) {
+          const steps = Math.floor(elapsed / frameDuration);
+          elapsed %= frameDuration;
+          frameIndex = (frameIndex + steps) % runFrames.length;
+          sprite.material.map = runFrames[frameIndex];
+        }
+      }
+    };
+
+    update(0, 'RUN');
+    return { root, leftLeg, rightLeg, sprite, update, handlesActionStates: true };
+  }
+
   const runner = config.runner;
   const root = new THREE.Group();
   root.name = 'runner';
@@ -263,6 +341,12 @@ export function createObstacleVisual(THREE, palette, config, textures = {}) {
   barrierBand.rotation.x = Math.PI / 2;
   addVariant('LOW_BARRIER', [barrier, barrierTop, barrierLegLeft, barrierLegRight, barrierBand], 0.4);
 
+  const obstacleSprites = textures.props?.obstacles ?? {};
+  useObstacleSprite(THREE, variants.get('BEAM'), obstacleSprites.BEAM, 'beam', 2.75);
+  useObstacleSprite(THREE, variants.get('PILLAR'), obstacleSprites.PILLAR, 'pillar', 2.2);
+  useObstacleSprite(THREE, variants.get('FIRE'), obstacleSprites.FIRE, 'fire', 2.25);
+  useObstacleSprite(THREE, variants.get('LOW_BARRIER'), obstacleSprites.LOW_BARRIER, 'low-barrier', 1.9);
+
   attachObstacleApi(root, variantNames, config);
   root.setType('LOW_BARRIER');
   root.visible = false;
@@ -396,6 +480,20 @@ export function createPickupVisual(THREE, palette, type = 'COIN', textures = {})
   magnet.add(magnetRing, magnetCap);
   magnet.children[1].position.y = -0.22;
   addVariant('MAGNET', magnet);
+
+  const pickupSprites = [
+    ['COIN', textures.props?.coin, 0.92],
+    ['SHIELD', textures.props?.powerUps?.SHIELD, 1.35],
+    ['BOOST', textures.props?.powerUps?.BOOST, 1.45],
+    ['MAGNET', textures.props?.powerUps?.MAGNET, 1.3],
+  ];
+  for (const [name, texture, height] of pickupSprites) {
+    if (!texture) continue;
+    const variant = variants.get(name);
+    const sprite = makeImageSprite(THREE, texture, `${name}-art`, height, 1);
+    for (const child of variant.children) child.visible = false;
+    variant.add(sprite);
+  }
 
   attachPickupApi(root, variantNames);
   root.setType(type);

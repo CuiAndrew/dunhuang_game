@@ -102,6 +102,34 @@ test('Runner consumes a theme visual factory without changing movement state', a
   assert.equal(runner.laneIndex, 0);
 });
 
+test('Runner forwards action-state changes to a state-aware theme visual', async () => {
+  const { Runner } = await import('../src/entities/Runner.js');
+  const states = [];
+  const root = new TestNode();
+  const visual = {
+    root,
+    leftLeg: new TestNode(),
+    rightLeg: new TestNode(),
+    handlesActionStates: true,
+    update: (_dt, state) => states.push(state),
+  };
+  root.add(visual.leftLeg, visual.rightLeg);
+  const runner = new Runner({
+    THREE: TEST_THREE,
+    Vector3: TestVector3,
+    track: createTrack(),
+    config: CONFIG,
+    palette: { ochreRed: 0, plaster: 0, dunhuangGold: 0, stoneBlue: 0, ink: 0 },
+    createVisual: () => visual,
+  });
+
+  runner.handleAction('JUMP');
+  assert.equal(states.at(-1), 'JUMP');
+  runner.update(CONFIG.runner.jumpRiseTime + CONFIG.runner.jumpFallTime);
+  assert.equal(states.at(-1), 'RUN');
+  assert.equal(root.scale.y, 1, 'a pose sprite should not be squashed to imitate sliding');
+});
+
 test('Pursuer keeps runner at hit speed and recovers linearly over the penalty window', async () => {
   const { Runner } = await import('../src/entities/Runner.js');
   const { Pursuer } = await import('../src/entities/Pursuer.js');
