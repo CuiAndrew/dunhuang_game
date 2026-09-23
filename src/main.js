@@ -13,7 +13,7 @@ import { CameraRig } from './entities/CameraRig.js';
 import { Runner } from './entities/Runner.js?v=20260923-1';
 import { Pursuer } from './entities/Pursuer.js?v=20260920-2';
 import { Hud } from './ui/Hud.js?v=20260923-1';
-import { Screens } from './ui/Screens.js?v=20260921-13';
+import { Screens } from './ui/Screens.js?v=20260923-4';
 import { CollisionSystem } from './systems/Collision.js';
 import { PowerUp } from './systems/PowerUp.js';
 import { PerformanceBudget } from './systems/Performance.js';
@@ -164,6 +164,7 @@ try {
   });
   const screens = new Screens({
     layer: screenLayer,
+    assets: theme.assets?.ui,
     onStart: () => { gameState.transition(GAME_STATES.PLAYING); },
     onResume: () => { gameState.transition(GAME_STATES.PLAYING); },
     onRestart: () => {

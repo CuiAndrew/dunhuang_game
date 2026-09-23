@@ -407,6 +407,189 @@
         *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; animation: none !important; }
         .flying-ribbon, .cloud-motif { opacity: 0.34; }
       }
+      /* Reference UI artwork from the v10 art pack. The generic paper panel remains the fallback for other themes. */
+      .screen-menu[data-art="true"], .screen-result[data-art="true"] {
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+        color: var(--paper);
+      }
+      .screen-menu[data-art="true"]::after, .screen-result[data-art="true"]::after { display: none; }
+      .screen-menu[data-art="true"] {
+        width: min(96%, 38rem);
+        padding: 0;
+      }
+      .screen-menu[data-art="true"] .screen-content,
+      .screen-result[data-art="true"] .screen-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .screen-title-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 539 / 270;
+      }
+      .screen-title-art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 0.8rem 1.4rem rgb(10 18 30 / 52%));
+      }
+      .screen-menu .screen-title-copy {
+        position: absolute;
+        inset: 34% 14% auto;
+        margin: 0;
+        color: #71391c;
+        font: 900 clamp(2rem, 8cqw, 4.1rem)/1.1 "STKaiti", "KaiTi", var(--ui-font);
+        letter-spacing: 0.08em;
+        text-align: center;
+        text-shadow: 0 0.12rem 0 rgb(255 244 204 / 60%);
+      }
+      .screen-menu[data-art="true"] .instruction {
+        max-width: 28rem;
+        margin: -0.15rem auto 0.8rem;
+        color: var(--paper);
+        font-size: clamp(0.78rem, 2.5cqw, 1.1rem);
+        line-height: 1.65;
+        text-shadow: 0 0.12rem 0.28rem rgb(10 18 30 / 90%);
+      }
+      .screen-menu[data-art="true"] .controls-hint {
+        margin: 0 auto 0.8rem;
+        color: var(--paper);
+        text-shadow: 0 0.1rem 0.24rem rgb(10 18 30 / 90%);
+      }
+      .screen-action-button {
+        position: relative;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .screen-menu[data-art="true"] .screen-action-button {
+        width: min(58%, 18rem);
+        min-width: 0;
+        min-height: 0;
+        aspect-ratio: 324 / 154;
+        padding: 0;
+      }
+      .screen-image-button {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      .screen-button-art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 0.3rem 0.55rem rgb(10 18 30 / 48%));
+      }
+      .screen-image-button span {
+        position: relative;
+        z-index: 1;
+        color: #63371a;
+        font: 900 clamp(0.9rem, 3.4cqw, 1.45rem)/1 var(--ui-font);
+        letter-spacing: 0.16em;
+        text-shadow: 0 0.08rem 0 rgb(255 244 204 / 60%);
+      }
+      .screen-result[data-art="true"] {
+        width: min(82%, 29rem);
+        aspect-ratio: 404 / 493;
+        padding: 0;
+      }
+      .screen-result-art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 1.2rem 2.3rem rgb(10 18 30 / 60%));
+      }
+      .title-panel.screen-result[data-art="true"] > .screen-result-art {
+        position: absolute;
+        z-index: 0;
+      }
+      .screen-result[data-art="true"] .screen-content {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        display: block;
+      }
+      .screen-result[data-art="true"] h2 {
+        position: absolute;
+        top: 25%;
+        left: 12%;
+        width: 76%;
+        margin: 0;
+        color: #71421f;
+        font: 900 clamp(1.6rem, 6cqw, 2.7rem)/1.1 "STKaiti", "KaiTi", var(--ui-font);
+        letter-spacing: 0.08em;
+        text-shadow: 0 0.08rem 0 rgb(255 244 204 / 65%);
+      }
+      .screen-result[data-art="true"] .result-stats {
+        position: absolute;
+        top: 42%;
+        left: 19%;
+        width: 76%;
+        margin: 0;
+        color: #6a533b;
+        font: 700 clamp(0.72rem, 2.7cqw, 1.1rem)/1.25 var(--ui-font);
+      }
+      .screen-result[data-art="true"] .result-stats p {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.6rem;
+        margin: 0;
+        padding: 0.32rem 0;
+      }
+      .screen-result[data-art="true"] .result-stats strong { color: #553419; font-weight: 900; }
+      .screen-result[data-art="true"] .result-best {
+        position: absolute;
+        top: 67%;
+        left: 18%;
+        width: 64%;
+        margin: 0;
+        color: #6a533b;
+        font: 700 clamp(0.62rem, 2.3cqw, 0.92rem)/1.3 var(--ui-font);
+        text-align: center;
+      }
+      .screen-result[data-art="true"] .screen-result-action {
+        position: absolute;
+        left: 38%;
+        top: 78%;
+        width: 52%;
+        min-width: 0;
+        min-height: 0;
+        aspect-ratio: 324 / 154;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        color: #603619;
+        background: transparent;
+        box-shadow: none;
+        font: 900 clamp(0.76rem, 2.8cqw, 1.15rem)/1 var(--ui-font);
+        letter-spacing: 0.08em;
+      }
+      .screen-result[data-art="true"] .screen-result-action:hover,
+      .screen-result[data-art="true"] .screen-result-action:active { background: rgb(255 232 170 / 14%); }
+      .screen-result[data-art="true"] .screen-result-action span { position: relative; z-index: 1; }
+
+      @media (max-width: 640px) {
+        .screen-menu[data-art="true"] { width: 98%; }
+        .screen-result[data-art="true"] { width: 88%; }
+        .screen-menu[data-art="true"] .instruction { margin-top: -0.1rem; }
+      }
     </style>
     <script type="importmap">
       {
@@ -448,14 +631,19 @@
         <button id="mute-button" type="button" aria-label="静音切换">♫</button>
       </div>
       <section id="screen-layer" aria-label="游戏开始界面">
-        <div class="paper-panel title-panel">
-          <div class="screen-decoration cloud-motif" aria-hidden="true"></div>
-          <div class="screen-decoration flying-ribbon" aria-hidden="true"></div>
-          <p class="eyebrow">壁画行者 · 沙海逃亡</p>
-          <h1>敦煌逃亡</h1>
-          <p class="instruction">自动前行，左右换道，跃过断壁，避开身后的苏醒石兽。</p>
-          <p class="controls-hint"><kbd>←</kbd><kbd>→</kbd> 换道　<kbd>↑</kbd> 跳跃　<kbd>↓</kbd> 滑行</p>
-          <button id="start-button" class="seal-button" type="button">开始逃亡</button>
+        <div class="paper-panel title-panel screen-menu" data-screen="menu" data-art="true">
+          <div class="screen-content">
+            <div class="screen-title-wrap">
+              <img class="screen-title-art" src="./src/art/assets/ui/title_plaque.png" alt="" aria-hidden="true" />
+              <h1 class="screen-title-copy">敦煌逃亡</h1>
+            </div>
+            <p class="instruction">越过石窟长桥，穿行月色与流云。<br />收集铜钱，在丝路上跑得更远。</p>
+            <p class="controls-hint"><kbd>←</kbd><kbd>→</kbd> 换道　<kbd>↑</kbd> 跳跃　<kbd>↓</kbd> 滑行</p>
+            <button id="start-button" class="seal-button screen-action-button screen-image-button" type="button">
+              <img class="screen-button-art" src="./src/art/assets/ui/start_button.png" alt="" aria-hidden="true" />
+              <span>开始逃亡</span>
+            </button>
+          </div>
         </div>
       </section>
       <section id="error-panel" role="alert" aria-live="assertive" hidden>
@@ -465,6 +653,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./src/main.js?v=20260923-3"></script>
+    <script type="module" src="./src/main.js?v=20260923-4"></script>
   </body>
 </html>

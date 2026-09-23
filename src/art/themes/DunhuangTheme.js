@@ -44,6 +44,11 @@ const assets = Object.freeze({
     skill: assetUrl('../assets/hud/skill.png'),
     swipeHint: assetUrl('../assets/hud/swipe_hint.png'),
   }),
+  ui: Object.freeze({
+    titlePlaque: assetUrl('../assets/ui/title_plaque.png'),
+    startButton: assetUrl('../assets/ui/start_button.png'),
+    resultPanel: assetUrl('../assets/ui/result_panel.png'),
+  }),
 });
 
 export const DUNHUANG_THEME = Object.freeze({

@@ -23,6 +23,8 @@ test('presentation layer exposes themed art slots and keeps assets theme-control
   assert.match(html, /id="coin-panel"/);
   assert.match(html, /id="power-up-label"/);
   assert.match(html, /id="swipe-hint"/);
+  assert.match(html, /src="\.\/src\/art\/assets\/ui\/title_plaque\.png"/);
+  assert.match(html, /src="\.\/src\/art\/assets\/ui\/start_button\.png"/);
   assert.match(html, /aria-live="off"/);
   assert.match(html, /danger-breathe/);
   assert.match(html, /--mural-blue/);
@@ -119,6 +121,52 @@ test('presentation modules keep procedural effects and native accessibility hook
   assert.match(readFileSync(new URL('../src/ui/Hud.js', import.meta.url), 'utf8'), /danger-active/);
 });
 
+test('start and result screens consume theme supplied Dunhuang artwork', () => {
+  const screens = readFileSync(new URL('../src/ui/Screens.js', import.meta.url), 'utf8');
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(screens, /titlePlaque/);
+  assert.match(screens, /startButton/);
+  assert.match(screens, /resultPanel/);
+  assert.match(screens, /screen-title-art/);
+  assert.match(screens, /screen-result-art/);
+  assert.match(main, /assets:\s*theme\.assets\?\.ui/);
+});
+
+test('Screens render the supplied art over the start and result actions', async () => {
+  const { Screens } = await import('../src/ui/Screens.js');
+  const layer = {
+    innerHTML: '',
+    hidden: true,
+    querySelector: () => ({}),
+  };
+  const screens = new Screens({
+    layer,
+    assets: {
+      titlePlaque: './src/art/assets/ui/title_plaque.png',
+      startButton: './src/art/assets/ui/start_button.png',
+      resultPanel: './src/art/assets/ui/result_panel.png',
+    },
+  });
+
+  assert.match(layer.innerHTML, /screen-title-art[^>]+title_plaque\.png/);
+  assert.match(layer.innerHTML, /screen-button-art[^>]+start_button\.png/);
+  assert.match(layer.innerHTML, /data-art="true"/);
+  assert.equal(layer.hidden, false);
+
+  screens.showResult({ distance: 230, coins: 12, total: 890, highScore: 1200, newRecord: false });
+  assert.match(layer.innerHTML, /screen-result-art[^>]+result_panel\.png/);
+  assert.match(layer.innerHTML, /本次逃亡/);
+  assert.match(layer.innerHTML, /230 米/);
+  assert.match(layer.innerHTML, /再来一次/);
+});
+
+test('art result layout anchors copy and action to the reference panel slots', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /\.screen-result\[data-art="true"\] \.screen-content\s*\{[^}]*position:\s*absolute/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*position:\s*absolute/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.screen-result-action\s*\{[^}]*position:\s*absolute/s);
+});
+
 test('result screen exposes historical high score and new-record feedback', () => {
   const screens = readFileSync(new URL('../src/ui/Screens.js', import.meta.url), 'utf8');
   assert.match(screens, /score\.highScore/);
@@ -135,7 +183,7 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   assert.match(main, /art\/AssetLoader\.js\?v=20260923-1/);
   assert.match(main, /entities\/Runner\.js\?v=20260923-1/);
   assert.match(main, /entities\/Pursuer\.js\?v=20260920-2/);
-  assert.match(main, /ui\/Screens\.js\?v=20260921-13/);
+  assert.match(main, /ui\/Screens\.js\?v=20260923-4/);
   assert.match(main, /systems\/Score\.js\?v=20260920-2/);
   assert.match(main, /world\/TrackGraph\.js\?v=20260920-3/);
   assert.match(main, /sfx\.muted \? '♫̸' : '♫'/);
