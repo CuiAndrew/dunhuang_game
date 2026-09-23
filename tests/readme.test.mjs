@@ -24,6 +24,7 @@ test('README documents real setup, runtime requirements, and controls', () => {
     '↓',
     'P / Esc',
     '触控滑动',
+    'index%202.html',
   ];
 
   for (const text of requiredContent) {
@@ -46,7 +47,14 @@ test('README local Markdown links point to existing files', () => {
   }
 });
 
-test('the repository keeps one canonical browser entrypoint', () => {
+test('the repository exposes synchronized canonical and compatibility entrypoints', () => {
+  const canonicalEntrypointUrl = new URL('../index.html', import.meta.url);
   const duplicateEntrypointUrl = new URL('../index 2.html', import.meta.url);
-  assert.equal(existsSync(duplicateEntrypointUrl), false, 'index 2.html must not remain beside index.html');
+  assert.equal(existsSync(canonicalEntrypointUrl), true, 'index.html must remain the canonical entrypoint');
+  assert.equal(existsSync(duplicateEntrypointUrl), true, 'index 2.html must remain available for existing browser tabs');
+  assert.equal(
+    readFileSync(duplicateEntrypointUrl, 'utf8'),
+    readFileSync(canonicalEntrypointUrl, 'utf8'),
+    'index 2.html must stay synchronized with index.html',
+  );
 });

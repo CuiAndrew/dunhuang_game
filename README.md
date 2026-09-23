@@ -34,6 +34,8 @@ python3 -m http.server 4173 --bind 127.0.0.1
 
 保持服务器终端运行，再在现代浏览器打开 [http://127.0.0.1:4173/](http://127.0.0.1:4173/)。按 `Ctrl+C` 停止服务器。不要直接双击 `index.html`，否则浏览器会以 `file://` 加载，import map 和模块资源可能无法正常工作。
 
+已有浏览器标签页如果打开的是 [兼容入口 `index 2.html`](index%202.html)，该入口与 `index.html` 保持同步；新会话推荐使用根地址。
+
 游戏运行需要支持 WebGL、原生 ES Modules 和 import maps 的浏览器。首次加载 Three.js 0.169.0 需要访问 unpkg CDN；请使用联网环境，并通过 HTTP 服务器访问，不要直接双击 `index.html`。游戏图片随仓库本地提供，图片加载失败时会回退到程序化绘制。
 
 ## 操作方式
