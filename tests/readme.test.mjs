@@ -30,7 +30,7 @@ test('README documents real setup, runtime requirements, and controls', () => {
     assert.ok(readme.includes(text), `README must include ${text}`);
   }
 
-  assert.doesNotMatch(readme, /npm run (?:dev|build)/);
+  assert.doesNotMatch(readme, /^npm run (?:dev|build)$/m, 'README must not present unavailable npm scripts as launch commands');
 });
 
 test('README local Markdown links point to existing files', () => {
@@ -44,4 +44,9 @@ test('README local Markdown links point to existing files', () => {
     if (!target) continue;
     assert.equal(existsSync(new URL(target, readmeUrl)), true, `README link target must exist: ${href}`);
   }
+});
+
+test('the repository keeps one canonical browser entrypoint', () => {
+  const duplicateEntrypointUrl = new URL('../index 2.html', import.meta.url);
+  assert.equal(existsSync(duplicateEntrypointUrl), false, 'index 2.html must not remain beside index.html');
 });
