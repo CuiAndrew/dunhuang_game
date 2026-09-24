@@ -205,11 +205,24 @@ test('art result layout anchors copy and action to the reference panel slots', (
   assert.match(html, /\.screen-result\[data-art="true"\] \.screen-content\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*inset:\s*0;[^}]*width:\s*auto/s);
-  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*19%;[^}]*width:\s*61%/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*19%;[^}]*width:\s*55%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(1\)\s*\{[^}]*top:\s*37%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(2\)\s*\{[^}]*top:\s*48%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(3\)\s*\{[^}]*top:\s*59%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.screen-result-action\s*\{[^}]*position:\s*absolute/s);
+});
+
+test('both local entrypoints refresh overlay modules and hide the swipe artwork when hidden', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const compatibilityHtml = readFileSync(new URL('../index 2.html', import.meta.url), 'utf8');
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+
+  for (const entrypoint of [html, compatibilityHtml]) {
+    assert.match(entrypoint, /src="\.\/src\/main\.js\?v=20260924-1"/);
+    assert.match(entrypoint, /#swipe-hint\[hidden\]\s*\{\s*display:\s*none\s*!important;/);
+  }
+  assert.match(main, /ui\/Hud\.js\?v=20260924-1/);
+  assert.match(main, /ui\/Screens\.js\?v=20260924-1/);
 });
 
 test('result screen exposes historical high score and new-record feedback', () => {
@@ -223,12 +236,12 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /audio\/Sfx\.js\?v=20260923-2/);
   assert.match(main, /audio\/AudioLifecycle\.js\?v=20260923-2/);
-  assert.match(main, /ui\/Hud\.js\?v=20260923-2/);
+  assert.match(main, /ui\/Hud\.js\?v=20260924-1/);
   assert.match(main, /art\/ThemeRegistry\.js\?v=20260923-1/);
   assert.match(main, /art\/AssetLoader\.js\?v=20260923-1/);
   assert.match(main, /entities\/Runner\.js\?v=20260923-1/);
   assert.match(main, /entities\/Pursuer\.js\?v=20260920-2/);
-  assert.match(main, /ui\/Screens\.js\?v=20260923-4/);
+  assert.match(main, /ui\/Screens\.js\?v=20260924-1/);
   assert.match(main, /hud\.setSwipeHintVisible\(next === GAME_STATES\.MENU\)/);
   assert.match(main, /systems\/Score\.js\?v=20260920-2/);
   assert.match(main, /world\/TrackGraph\.js\?v=20260920-3/);
