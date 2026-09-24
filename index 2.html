@@ -409,14 +409,14 @@
         .flying-ribbon, .cloud-motif { opacity: 0.34; }
       }
       /* Reference UI artwork from the v10 art pack. The generic paper panel remains the fallback for other themes. */
-      .screen-menu[data-art="true"], .screen-result[data-art="true"] {
+      .screen-menu[data-art="true"], .screen-pause[data-art="true"], .screen-result[data-art="true"] {
         border: 0;
         background: transparent;
         box-shadow: none;
         overflow: visible;
         color: var(--paper);
       }
-      .screen-menu[data-art="true"]::after, .screen-result[data-art="true"]::after { display: none; }
+      .screen-menu[data-art="true"]::after, .screen-pause[data-art="true"]::after, .screen-result[data-art="true"]::after { display: none; }
       .screen-menu[data-art="true"] {
         width: min(96%, 38rem);
         padding: 0;
@@ -501,6 +501,84 @@
         letter-spacing: 0.16em;
         text-shadow: 0 0.08rem 0 rgb(255 244 204 / 60%);
       }
+      .screen-pause[data-art="true"] {
+        width: min(82%, 29rem);
+        aspect-ratio: 371 / 424;
+        padding: 0;
+      }
+      .screen-pause[data-art="true"] .screen-content {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        display: block;
+      }
+      .screen-pause-art {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 1.2rem 2.3rem rgb(10 18 30 / 60%));
+      }
+      .title-panel.screen-pause[data-art="true"] > .screen-pause-art { position: absolute; }
+      .screen-pause[data-art="true"] .eyebrow,
+      .screen-pause[data-art="true"] h2,
+      .screen-pause[data-art="true"] .instruction,
+      .screen-pause[data-art="true"] .button-row { position: absolute; z-index: 1; }
+      .screen-pause[data-art="true"] .eyebrow {
+        top: 19%;
+        left: 14%;
+        width: 72%;
+        margin: 0;
+        color: #28558a;
+        font-size: clamp(0.75rem, 3.2cqw, 1.25rem);
+      }
+      .screen-pause[data-art="true"] h2 {
+        top: 24%;
+        left: 8%;
+        width: 84%;
+        margin: 0;
+        color: #214c82;
+        font: 900 clamp(1.8rem, 7cqw, 3.25rem)/1.05 "STKaiti", "KaiTi", var(--ui-font);
+        letter-spacing: 0.12em;
+        text-shadow: 0 0.08rem 0 rgb(255 244 204 / 65%);
+      }
+      .screen-pause[data-art="true"] .instruction {
+        top: 37%;
+        left: 9%;
+        width: 82%;
+        margin: 0;
+        color: #5c4a3b;
+        font-size: clamp(0.62rem, 2.5cqw, 1rem);
+        line-height: 1.4;
+      }
+      .screen-pause[data-art="true"] .button-row {
+        inset: 0;
+        display: block;
+      }
+      .screen-pause[data-art="true"] .button-row .seal-button {
+        position: absolute;
+        left: 24%;
+        width: 52%;
+        min-width: 0;
+        min-height: 0;
+        margin: 0;
+        padding: 0 4% 0 28%;
+        border: 0;
+        border-radius: 999px;
+        color: #603619;
+        background: transparent;
+        box-shadow: none;
+        font: 900 clamp(0.8rem, 3.2cqw, 1.25rem)/1 var(--ui-font);
+        letter-spacing: 0.08em;
+      }
+      .screen-pause[data-art="true"] #resume-button { top: 48%; height: 14%; }
+      .screen-pause[data-art="true"] #restart-button { top: 65%; height: 14%; }
+      .screen-pause[data-art="true"] .button-row .seal-button:hover,
+      .screen-pause[data-art="true"] .button-row .seal-button:active { background: rgb(255 232 170 / 14%); }
       .screen-result[data-art="true"] {
         width: min(82%, 29rem);
         aspect-ratio: 404 / 493;
@@ -596,6 +674,7 @@
 
       @media (max-width: 640px) {
         .screen-menu[data-art="true"] { width: 98%; }
+        .screen-pause[data-art="true"] { width: 88%; }
         .screen-result[data-art="true"] { width: 88%; }
         .screen-menu[data-art="true"] .instruction { margin-top: -0.1rem; }
       }

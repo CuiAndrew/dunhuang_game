@@ -60,6 +60,7 @@ export class Screens {
   }
 
   showPause() {
+    const pauseArt = this._image('pausePanel', 'screen-pause-art');
     this.layer.innerHTML = this._panel(`
       <p class="eyebrow">行者暂歇</p>
       <h2>已暂停</h2>
@@ -68,7 +69,12 @@ export class Screens {
         ${this._actionButton('resume-button', '继续')}
         ${this._actionButton('restart-button', '重新开始')}
       </div>
-    `, 'pause', { decorations: true });
+    `, 'pause', {
+      className: 'screen-pause',
+      panelArt: pauseArt,
+      artReady: Boolean(pauseArt),
+      decorations: !pauseArt,
+    });
     this.layer.querySelector('#resume-button').onclick = this.onResume;
     this.layer.querySelector('#restart-button').onclick = this.onRestart;
     this.layer.hidden = false;

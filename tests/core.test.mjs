@@ -102,5 +102,5 @@ test('main bootstraps the registered theme instead of importing art factories di
   assert.match(main, /theme\.createRunnerVisual\(\{\.\.\.context, textures\}\)/);
   assert.match(main, /theme\.createPursuerVisual\(\{ THREE, config: CONFIG, textures \}\)/);
   assert.match(registry, /ThemeDefinition\.js\?v=20260921-13/);
-  assert.match(registry, /themes\/DunhuangTheme\.js\?v=20260923-2/);
+  assert.match(registry, /themes\/DunhuangTheme\.js\?v=20260924-1/);
 });

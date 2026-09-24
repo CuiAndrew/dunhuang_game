@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { FxSystem } from './art/Fx.js';
 import { loadImageTextures } from './art/AssetLoader.js?v=20260923-1';
-import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js?v=20260923-1';
+import { DEFAULT_THEME_ID, getTheme } from './art/ThemeRegistry.js?v=20260924-2';
 import { bindAudioLifecycle } from './audio/AudioLifecycle.js?v=20260923-2';
 import { Sfx } from './audio/Sfx.js?v=20260923-2';
 import { CONFIG } from './core/Config.js';

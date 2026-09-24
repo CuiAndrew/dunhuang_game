@@ -47,6 +47,7 @@ const assets = Object.freeze({
   ui: Object.freeze({
     titlePlaque: assetUrl('../assets/ui/title_plaque.png'),
     startButton: assetUrl('../assets/ui/start_button.png'),
+    pausePanel: assetUrl('../assets/ui/pause_panel.png'),
     resultPanel: assetUrl('../assets/ui/result_panel.png'),
   }),
 });

@@ -200,6 +200,37 @@ test('Screens render the supplied art over the start and result actions', async 
   assert.match(layer.innerHTML, /再来一次/);
 });
 
+test('Screens render the supplied pause artwork with accessible pause actions', async () => {
+  const { Screens } = await import('../src/ui/Screens.js');
+  const layer = {
+    innerHTML: '',
+    hidden: true,
+    querySelector: () => ({}),
+  };
+  const screens = new Screens({
+    layer,
+    assets: { pausePanel: './src/art/assets/ui/pause_panel.png' },
+  });
+
+  screens.showPause();
+
+  assert.match(layer.innerHTML, /screen-pause-art[^>]+pause_panel\.png/);
+  assert.match(layer.innerHTML, /data-screen="pause"[^>]+data-art="true"/);
+  assert.match(layer.innerHTML, /id="resume-button"[^>]*>[^<]*<span>继续<\/span>/);
+  assert.match(layer.innerHTML, /id="restart-button"[^>]*>[^<]*<span>重新开始<\/span>/);
+  assert.equal(layer.hidden, false);
+});
+
+test('pause artwork layout is defined for both local entrypoints', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const compatibilityHtml = readFileSync(new URL('../index 2.html', import.meta.url), 'utf8');
+
+  for (const entrypoint of [html, compatibilityHtml]) {
+    assert.match(entrypoint, /\.screen-pause\[data-art="true"\]\s*\{[^}]*aspect-ratio:\s*371\s*\/\s*424/s);
+    assert.match(entrypoint, /\.screen-pause-art\s*\{[^}]*object-fit:\s*contain/s);
+  }
+});
+
 test('art result layout anchors copy and action to the reference panel slots', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const compatibilityHtml = readFileSync(new URL('../index 2.html', import.meta.url), 'utf8');
@@ -240,7 +271,7 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   assert.match(main, /audio\/Sfx\.js\?v=20260923-2/);
   assert.match(main, /audio\/AudioLifecycle\.js\?v=20260923-2/);
   assert.match(main, /ui\/Hud\.js\?v=20260924-1/);
-  assert.match(main, /art\/ThemeRegistry\.js\?v=20260923-1/);
+  assert.match(main, /art\/ThemeRegistry\.js\?v=20260924-2/);
   assert.match(main, /art\/AssetLoader\.js\?v=20260923-1/);
   assert.match(main, /entities\/Runner\.js\?v=20260923-1/);
   assert.match(main, /entities\/Pursuer\.js\?v=20260920-2/);

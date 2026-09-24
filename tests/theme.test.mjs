@@ -52,7 +52,7 @@ test('Dunhuang art is exposed as an extensible local theme asset manifest', asyn
 test('Dunhuang screen art is exposed as local theme assets for overlays', async () => {
   const { getTheme } = await import('../src/art/ThemeRegistry.js');
   const uiAssets = getTheme().assets.ui;
-  for (const key of ['titlePlaque', 'startButton', 'resultPanel']) {
+  for (const key of ['titlePlaque', 'startButton', 'pausePanel', 'resultPanel']) {
     assert.equal(typeof uiAssets[key], 'string', `ui.${key} must be a local asset URL`);
     assert.equal(new URL(uiAssets[key]).protocol, 'file:');
     assert.equal(existsSync(fileURLToPath(uiAssets[key])), true, `${uiAssets[key]} must exist locally`);
