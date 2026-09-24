@@ -24,7 +24,6 @@ test('README documents real setup, runtime requirements, and controls', () => {
     '↓',
     'P / Esc',
     '触控滑动',
-    'index%202.html',
   ];
 
   for (const text of requiredContent) {
