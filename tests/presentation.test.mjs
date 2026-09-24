@@ -202,10 +202,13 @@ test('Screens render the supplied art over the start and result actions', async 
 
 test('art result layout anchors copy and action to the reference panel slots', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const compatibilityHtml = readFileSync(new URL('../index 2.html', import.meta.url), 'utf8');
   assert.match(html, /\.screen-result\[data-art="true"\] \.screen-content\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*inset:\s*0;[^}]*width:\s*auto/s);
-  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*22%;[^}]*width:\s*37%/s);
+  for (const entrypoint of [html, compatibilityHtml]) {
+    assert.match(entrypoint, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*calc\(22% \+ 2em\);[^}]*width:\s*37%/s);
+  }
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(1\)\s*\{[^}]*top:\s*37%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(2\)\s*\{[^}]*top:\s*48%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(3\)\s*\{[^}]*top:\s*59%/s);
