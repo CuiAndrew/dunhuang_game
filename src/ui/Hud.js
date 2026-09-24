@@ -9,6 +9,7 @@ export class Hud {
     this.powerUpPanel = this._make('power-up-display', 'hud-power-up');
     this.powerUp = this._make('power-up-label', 'hud-power-up-value', 'power-up');
     this.danger = this._make('danger-vignette', 'danger-vignette');
+    this.swipeHint = this._query('swipe-hint');
 
     this._setImage('portrait-art', assets.portrait);
     this._setImage('score-art', assets.score);
@@ -17,6 +18,11 @@ export class Hud {
     this._setImage('pause-art', assets.pause);
     this._setImage('skill-art', assets.skill);
     this._setImage('swipe-art', assets.swipeHint);
+    this.setSwipeHintVisible(false);
+  }
+
+  setSwipeHintVisible(visible) {
+    if (this.swipeHint) this.swipeHint.hidden = !visible;
   }
 
   update({ score = 0, distance = 0, coins = 0, highScore = 0, powerUp, pursuerDistance = Infinity, impactRatio = 0 }) {

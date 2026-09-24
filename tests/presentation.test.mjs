@@ -109,6 +109,46 @@ test('HUD renders live values over the active theme artwork and degrades per mis
   assert.equal(elements.get('power-up-display').hidden, true, 'inactive power-up art should not cover the playfield');
 });
 
+test('HUD can hide the swipe hint after gameplay starts', async () => {
+  const { Hud } = await import('../src/ui/Hud.js');
+  const ids = [
+    'distance-display', 'coin-display', 'score-display', 'high-score-display',
+    'power-up-display', 'power-up-label', 'danger-vignette', 'portrait-art',
+    'score-art', 'distance-art', 'coin-art', 'pause-art', 'skill-art', 'swipe-art',
+    'swipe-hint',
+  ];
+  const elements = new Map(ids.map((id) => [id, {
+    id,
+    dataset: {},
+    style: { values: {}, setProperty() {} },
+    classList: { add() {}, toggle() {} },
+    hidden: false,
+    textContent: '',
+    src: '',
+  }]));
+  const hint = elements.get('swipe-hint');
+  const imageParents = {
+    'portrait-art': 'swipe-hint', 'score-art': 'swipe-hint', 'distance-art': 'swipe-hint',
+    'coin-art': 'swipe-hint', 'pause-art': 'swipe-hint', 'skill-art': 'swipe-hint', 'swipe-art': 'swipe-hint',
+  };
+  for (const [imageId, parentId] of Object.entries(imageParents)) {
+    elements.get(imageId).parentElement = elements.get(parentId);
+    elements.get(imageId).closest = () => elements.get(parentId);
+  }
+  const root = {
+    querySelector: (selector) => elements.get(selector.slice(1)) ?? null,
+    ownerDocument: { createElement: (tagName) => ({ tagName, dataset: {}, style: {}, classList: { add() {} } }) },
+    append() {},
+  };
+  const hud = new Hud({ root, assets: { swipeHint: 'file:///swipe.png' } });
+
+  assert.equal(hint.hidden, true, 'the swipe hint starts hidden until the menu state is active');
+  hud.setSwipeHintVisible(false);
+  assert.equal(hint.hidden, true);
+  hud.setSwipeHintVisible(true);
+  assert.equal(hint.hidden, false);
+});
+
 test('presentation modules keep procedural effects and native accessibility hooks', async () => {
   const hud = await import('../src/ui/Hud.js');
   const screens = await import('../src/ui/Screens.js');
@@ -164,6 +204,11 @@ test('art result layout anchors copy and action to the reference panel slots', (
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(html, /\.screen-result\[data-art="true"\] \.screen-content\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*position:\s*absolute/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*inset:\s*0;[^}]*width:\s*auto/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*19%;[^}]*width:\s*61%/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(1\)\s*\{[^}]*top:\s*37%/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(2\)\s*\{[^}]*top:\s*48%/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(3\)\s*\{[^}]*top:\s*59%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.screen-result-action\s*\{[^}]*position:\s*absolute/s);
 });
 
@@ -178,12 +223,13 @@ test('main loop routes jump and slide actions through their dedicated sound cues
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /audio\/Sfx\.js\?v=20260923-2/);
   assert.match(main, /audio\/AudioLifecycle\.js\?v=20260923-2/);
-  assert.match(main, /ui\/Hud\.js\?v=20260923-1/);
+  assert.match(main, /ui\/Hud\.js\?v=20260923-2/);
   assert.match(main, /art\/ThemeRegistry\.js\?v=20260923-1/);
   assert.match(main, /art\/AssetLoader\.js\?v=20260923-1/);
   assert.match(main, /entities\/Runner\.js\?v=20260923-1/);
   assert.match(main, /entities\/Pursuer\.js\?v=20260920-2/);
   assert.match(main, /ui\/Screens\.js\?v=20260923-4/);
+  assert.match(main, /hud\.setSwipeHintVisible\(next === GAME_STATES\.MENU\)/);
   assert.match(main, /systems\/Score\.js\?v=20260920-2/);
   assert.match(main, /world\/TrackGraph\.js\?v=20260920-3/);
   assert.match(main, /sfx\.muted \? '♫̸' : '♫'/);

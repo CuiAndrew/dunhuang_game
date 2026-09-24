@@ -12,7 +12,7 @@ import { FixedStepLoop } from './core/Loop.js';
 import { CameraRig } from './entities/CameraRig.js';
 import { Runner } from './entities/Runner.js?v=20260923-1';
 import { Pursuer } from './entities/Pursuer.js?v=20260920-2';
-import { Hud } from './ui/Hud.js?v=20260923-1';
+import { Hud } from './ui/Hud.js?v=20260923-2';
 import { Screens } from './ui/Screens.js?v=20260923-4';
 import { CollisionSystem } from './systems/Collision.js';
 import { PowerUp } from './systems/PowerUp.js';
@@ -335,6 +335,7 @@ try {
 
   gameState.subscribe((next) => {
     gameShell.dataset.gameState = next;
+    hud.setSwipeHintVisible(next === GAME_STATES.MENU);
     if (next === GAME_STATES.PLAYING) {
       screens.hide();
       loop.paused = false;
