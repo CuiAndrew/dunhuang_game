@@ -205,7 +205,7 @@ test('art result layout anchors copy and action to the reference panel slots', (
   assert.match(html, /\.screen-result\[data-art="true"\] \.screen-content\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*position:\s*absolute/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats\s*\{[^}]*inset:\s*0;[^}]*width:\s*auto/s);
-  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*19%;[^}]*width:\s*55%/s);
+  assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p\s*\{[^}]*left:\s*22%;[^}]*width:\s*37%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(1\)\s*\{[^}]*top:\s*37%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(2\)\s*\{[^}]*top:\s*48%/s);
   assert.match(html, /\.screen-result\[data-art="true"\] \.result-stats p:nth-child\(3\)\s*\{[^}]*top:\s*59%/s);
