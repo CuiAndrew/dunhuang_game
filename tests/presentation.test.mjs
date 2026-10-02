@@ -172,6 +172,19 @@ test('start and result screens consume theme supplied Dunhuang artwork', () => {
   assert.match(main, /assets:\s*theme\.assets\?\.ui/);
 });
 
+test('art start button stays transparent while hovered in both entrypoints', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const compatibilityHtml = readFileSync(new URL('../index 2.html', import.meta.url), 'utf8');
+
+  for (const entrypoint of [html, compatibilityHtml]) {
+    assert.match(
+      entrypoint,
+      /\.screen-image-button:hover(?:,\s*\.screen-image-button:active)?\s*\{[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s,
+      'image-backed start buttons must not show a hover box',
+    );
+  }
+});
+
 test('Screens render the supplied art over the start and result actions', async () => {
   const { Screens } = await import('../src/ui/Screens.js');
   const layer = {
